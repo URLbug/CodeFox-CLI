@@ -1,0 +1,8 @@
+.vscode/
+.idea/
+.env
+.codefoxignore
+
+venv/
+__pycache__/
+*.pyc
