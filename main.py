@@ -1,4 +1,4 @@
-#!/Users/macbook/works/codefox-cli/venv/bin/python3
+#!/usr/bin/python3
 import typer
 
 from rich import print
@@ -21,5 +21,10 @@ def main(
     manager = CLIManager(command=command, args=args)
     manager.run()
 
+def cli():
+    """Entry point wrapper used by the console script."""
+    typer.run(main)
+
+
 if __name__ == "__main__":
-   typer.run(main)
+    cli()
