@@ -6,9 +6,17 @@ from codefox.cli_manager import CLIManager
 
 def main(
         command: str = typer.Option(help="The command to execute."),
-        args: str = typer.Option(help="Arguments for the command.")
+        args: str = typer.Option(None, help="Arguments for the command.")
 ):
-    """Entry point for the CodeFox CLI application."""
+    """
+    Welcome to CodeFox CLI! This tool allows you to interact with various AI models and perform different tasks. 
+    
+    To get started, use the following commands:
+    
+    - [bold cyan]init[/bold cyan]: Initializes the CodeFox CLI environment.
+    
+    - [bold cyan]scan[/bold cyan]: Executes a scan using the Gemini API to generate content based on a prompt.
+    """
     manager = CLIManager(command=command, args=args)
     manager.run()
 
