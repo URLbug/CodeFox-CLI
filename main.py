@@ -17,6 +17,8 @@ def main(
     - [bold cyan]init[/bold cyan]: Initializes the CodeFox CLI environment.
     
     - [bold cyan]scan[/bold cyan]: Executes a scan using the Gemini API to generate content based on a prompt.
+
+    - [bold cyan]version[/bold cyan]: Displays the current version of CodeFox CLI.
     """
     manager = CLIManager(command=command, args=args)
     manager.run()
