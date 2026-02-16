@@ -11,6 +11,14 @@ class Gemini(BaseAPI):
         super().__init__()
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
+    def check_connection(self):
+        try:
+            self.client.models.list()
+            return True
+        except Exception as e:
+            print(f'[red]Failed to connect to Gemini API: {e}[/red]')
+            return False
+
     def execute(self):
         super().execute()
         

@@ -1,3 +1,4 @@
+#!/Users/macbook/works/codefox-cli/venv/bin/python3
 import typer
 
 from rich import print

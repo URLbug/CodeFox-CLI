@@ -1,6 +1,7 @@
 .vscode/
 .idea/
 .env
+.codefoxignore
 
 venv/
 __pycache__/
