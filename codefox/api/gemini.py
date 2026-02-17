@@ -4,7 +4,8 @@ import time
 from google import genai
 from google.genai import types
 from rich import print
-from rich.progress import track
+from rich.progress import Progress
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from codefox.api.base_api import BaseAPI
 
@@ -12,6 +13,7 @@ from codefox.api.base_api import BaseAPI
 
 class Gemini(BaseAPI):
     SUPPORTED_EXTENSIONS = {'.py', '.js', '.java', '.cpp', '.c', '.cs', '.go', '.rb', '.php', '.ts', '.swift'}
+    MAX_WORKERS = 10 
 
     def __init__(self):
         super().__init__()
@@ -46,18 +48,29 @@ class Gemini(BaseAPI):
                     all_files_to_upload.append(os.path.join(root, filename))
 
 
-        operations = []
-        for file_path in track(all_files_to_upload, description="[bold cyan]Uploading codebase...[/]"):
-            try:
-                upload_op = self.client.file_search_stores.upload_to_file_search_store(
-                    file_search_store_name=store.name,
-                    file=file_path,
-                    config={'mime_type': 'text/plain'}
-                )
+        valid_files = [
+            f for f in all_files_to_upload 
+            if not any(ignored in f for ignored in ignored_paths)
+        ]
 
-                operations.append(upload_op)
-            except Exception as e:
-                return False, f"Error uploading {file_path}: {e}"
+        operations = []
+
+        with Progress() as progress:
+            task = progress.add_task("[bold cyan]Uploading codebase...[/]", total=len(valid_files))
+            
+            with ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as executor:
+                futures = {executor.submit(self.__upload_single_file, f, store): f for f in valid_files}
+                
+                for future in as_completed(futures):
+                    upload_op, error = future.result()
+                    
+                    if error:
+                        failed_file, exc = error
+                        print(f'[red]Error uploading {failed_file}: {exc}[/red]')
+                    else:
+                        operations.append(upload_op)
+                        
+                    progress.advance(task)
         
         print(f'[yellow]Waiting for Gemini API to process uploaded files...[/yellow]')
         while all(op.done for op in operations):
@@ -65,44 +78,30 @@ class Gemini(BaseAPI):
 
         return True, store
             
+    def __upload_single_file(self, file_path, store):
+        try:
+            upload_op = self.client.file_search_stores.upload_to_file_search_store(
+                file_search_store_name=store.name,
+                file=file_path,
+                config={'mime_type': 'text/plain'}
+            )
+            return upload_op, None
+        except Exception as e:
+            return None, (file_path, e)
+
+    def remove_files(self, store):
+        try:
+            self.client.file_search_stores.delete(name=store.name, config=types.DeleteFileSearchStoreConfig(force=True))
+            print(f'[green]Successfully removed file search store: {store.name}[/green]')
+        except Exception as e:
+            print(f'[red]Error removing file search store {store.name}: {e}[/red]')
+    
     def execute(self, store, diff_text=""):
         super().execute()
 
-        system_prompt = system_prompt = """
-        [ROLE]
-        You are CodeFox :fox_face:, an elite AI Cybersecurity Engineer and Senior Software Architect. 
-        Your mission: a ruthless deep-dive audit of code changes, hunting for architectural rot, security exploits, and broken business logic.
-
-        [CORE PRIORITIES]
-        1. Security: SQLi, XSS, Secret Leaks, Insecure Dependencies, Broken Auth.
-        2. Architecture: SOLID, DRY, KISS. Identify "Code Smells" and anti-patterns.
-        3. Business Logic & Integrity: (CRITICAL)
-        - Detect "Off-by-one" errors in calculations.
-        - Find flawed state transitions (e.g., an order moving from 'cancelled' to 'shipped').
-        - Identify missing edge-case handling (nulls, empty collections, timeouts).
-        - Check for race conditions in asynchronous logic.
-        - Audit financial/mathematical precision (e.g., float vs Decimal).
-        4. Auto-Fix: Provide high-quality, production-ready code for every issue.
-
-        [STRICT FORMATTING RULES]
-        - NO MARKDOWN (no ###, no **, no ```).
-        - USE ONLY Python 'Rich' library tags.
-        - Use :fox_face:, :warning:, :white_check_mark:, :bug:, :money_with_wings: for logic issues.
-
-        [RESPONSE STRUCTURE]
-        For each finding:
-        [bold blue]─── CodeFox Audit Report ───[/]
-        - Location: [cyan underline]path/to/file[/] : [bold yellow]Line XX[/]
-        - Issue: [bold red]Description (Security/Arch/Logic)[/]
-        - Auto-Fix:
-        [green]
-        (Corrected code snippet - no markdown blocks)
-        [/]
-        - Senior Tip: [italic white]Professional advice on avoiding this in the future[/]
-
-        If no issues found:
-        [bold green]:white_check_mark: LGTM: All systems clear. Business logic is sound.[/]
-        """
+        path_instruction = os.path.join(os.path.dirname(__file__), '..', '..', 'instruction.txt')
+        with open(path_instruction, 'r') as f:
+            system_prompt = f.read()
 
         content = f"Analyze the following git diff and identify potential risks:\n\n{diff_text}"        
         
