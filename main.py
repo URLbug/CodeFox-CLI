@@ -1,4 +1,4 @@
-#!/Users/macbook/works/codefox-cli/venv/bin/python3
+#!/usr/bin/python3
 import typer
 
 from rich import print
@@ -17,9 +17,16 @@ def main(
     - [bold cyan]init[/bold cyan]: Initializes the CodeFox CLI environment.
     
     - [bold cyan]scan[/bold cyan]: Executes a scan using the Gemini API to generate content based on a prompt.
+
+    - [bold cyan]version[/bold cyan]: Displays the current version of CodeFox CLI.
     """
     manager = CLIManager(command=command, args=args)
     manager.run()
 
+def cli():
+    """Entry point wrapper used by the console script."""
+    typer.run(main)
+
+
 if __name__ == "__main__":
-   typer.run(main)
+    cli()
