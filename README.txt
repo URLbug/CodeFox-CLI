@@ -12,10 +12,10 @@ Install dependencies locally
 pip install -r requirements.txt
 
 Install in development mode (provides local codefox command)
-python3 -m pip3 install -e .
+python3 -m pip install -e .
 
 Install directly from the repository
-python3 -m pip3 install git+https://github.com/URLbug/CodeFox-CLI.git
+python3 -m pip install git+https://github.com/URLbug/CodeFox-CLI.git
 
 Quick Start
 ------------
