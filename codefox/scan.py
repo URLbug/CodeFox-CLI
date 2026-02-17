@@ -25,7 +25,7 @@ class Scan:
             return
 
         print('[yellow]Waiting for Gemini API response...[/yellow]')
-        # response = self.gemini.execute(store, diff_text)
-        # print(f'[green]Scan result from Gemini API:[/green]\n{response.text}')
+        response = self.gemini.execute(store, diff_text)
+        print(f'[green]Scan result from Gemini API:[/green]\n{response.text}')
 
         self.gemini.remove_files(store)
