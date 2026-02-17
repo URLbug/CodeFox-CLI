@@ -13,7 +13,7 @@ class CLIManager:
         self.args = args
 
         path_env = os.path.join(os.path.dirname(__file__), '..', '.env')
-        if not load_dotenv(path_env) and command != "init":
+        if not load_dotenv(path_env) and command not in ['init', 'version',]:
             raise FileExistsError('Failed to load .env file. Please ensure it exists and is properly formatted.')
 
     def run(self):
