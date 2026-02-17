@@ -22,7 +22,7 @@ setup(
 	],
 	entry_points={
 		"console_scripts": [
-			"codefox=main:cli",
+			"codefox=codefox.main:cli",
 		],
 	},
 	classifiers=[
