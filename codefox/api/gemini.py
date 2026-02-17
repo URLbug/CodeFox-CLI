@@ -106,6 +106,8 @@ class Gemini(BaseAPI):
 
         You think in data flow, execution paths, and state transitions — never in assumptions.
 
+
+        
         ──────────────── ANALYSIS PROTOCOL ────────────────
         Follow this workflow strictly:
 
