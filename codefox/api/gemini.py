@@ -99,7 +99,7 @@ class Gemini(BaseAPI):
     def execute(self, store, diff_text=""):
         super().execute()
 
-        path_instruction = os.path.join(os.path.dirname(__file__), '..', '..', 'instruction.txt')
+        path_instruction = os.path.join(os.path.dirname(__file__), '..', 'instruction.txt')
         with open(path_instruction, 'r') as f:
             system_prompt = f.read()
 
