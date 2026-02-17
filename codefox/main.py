@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import typer
 
-from rich import print
-
 from codefox.cli_manager import CLIManager
 
 def main(

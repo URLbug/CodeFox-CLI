@@ -12,7 +12,6 @@ setup(
 	long_description_content_type="text/plain",
 	author="",
 	packages=find_packages(),
-	py_modules=["main"],
 	include_package_data=True,
 	install_requires=[
 		"typer",
