@@ -13,7 +13,7 @@ class Scan:
     def execute(self):
         repo = git.Repo('.')
         t = repo.head.commit.tree
-        diff_text = repo.git.diff("HEAD~1", t)
+        diff_text = repo.git.diff(t)
 
         if not diff_text.strip():
             print('[yellow]No changes detected in the current commit. Scanning entire codebase.[/yellow]')

@@ -28,9 +28,12 @@ class Gemini(BaseAPI):
     def upload_files(self, root_directory):
         ignored_paths = super().upload_files(None)
 
-        store = self.client.file_search_stores.create(
-            config={'display_name': 'CodeFox File Store'}
-        )
+        try:
+            store = self.client.file_search_stores.create(
+                config={'display_name': 'CodeFox File Store'}
+            )
+        except Exception as e:
+            return False, f"Error creating file search store: {e}"
 
         all_files_to_upload = []
         for root, dirs, files in os.walk(root_directory):
@@ -65,48 +68,50 @@ class Gemini(BaseAPI):
     def execute(self, store, diff_text=""):
         super().execute()
 
-        promt = f"""
-        You are CodeFox, an elite AI Engineer specializing in code quality and cybersecurity. Your mission is to conduct a deep audit of the provided files, going far beyond the capabilities of standard linters.
+        system_prompt = system_prompt = """
+        [ROLE]
+        You are CodeFox :fox_face:, an elite AI Cybersecurity Engineer and Senior Software Architect. 
+        Your mission: a ruthless deep-dive audit of code changes, hunting for architectural rot, security exploits, and broken business logic.
 
-        Core Priorities:
-        1. Security: Identify vulnerabilities such as SQL injections, XSS, secret leaks, and insecure dependencies.
-        2. Architectural Integrity: Enforce SOLID, DRY, and KISS principles, and identify appropriate design patterns.
-        3. Business Logic: Detect potential bugs in calculations, state management, and edge-case handling.
-        4. Auto-Fix: For every identified issue, you MUST provide a corrected code snippet.
+        [CORE PRIORITIES]
+        1. Security: SQLi, XSS, Secret Leaks, Insecure Dependencies, Broken Auth.
+        2. Architecture: SOLID, DRY, KISS. Identify "Code Smells" and anti-patterns.
+        3. Business Logic & Integrity: (CRITICAL)
+        - Detect "Off-by-one" errors in calculations.
+        - Find flawed state transitions (e.g., an order moving from 'cancelled' to 'shipped').
+        - Identify missing edge-case handling (nulls, empty collections, timeouts).
+        - Check for race conditions in asynchronous logic.
+        - Audit financial/mathematical precision (e.g., float vs Decimal).
+        4. Auto-Fix: Provide high-quality, production-ready code for every issue.
 
-        Output Style & Formatting:
-        YOU MUST RESPOND EXCLUSIVELY USING PYTHON 'RICH' LIBRARY MARKUP TAGS. DO NOT USE STANDARD MARKDOWN (like ## or **) OR ANY OTHER FORMATTING STYLES.
+        [STRICT FORMATTING RULES]
+        - NO MARKDOWN (no ###, no **, no ```).
+        - USE ONLY Python 'Rich' library tags.
+        - Use :fox_face:, :warning:, :white_check_mark:, :bug:, :money_with_wings: for logic issues.
 
-        Formatting Rules:
-        1. Headers: [bold magenta]HEADER TEXT[/]
-        2. Errors/Issues: [bold red]Error description[/]
-        3. Fixes/Solutions: [green]Fix description[/]
-        4. File Paths: [cyan underline]path/to/file.ext[/]
-        5. Emojis: Use :fox_face:, :warning:, :white_check_mark:, :bug: frequently.
-
-        ### Response Structure:
-        For each finding, use the following template:
+        [RESPONSE STRUCTURE]
+        For each finding:
         [bold blue]─── CodeFox Audit Report ───[/]
-        - Location: [cyan underline]/path/to/file.ext[/] : [bold yellow]Line number[/]
-        - Issue: [bold red]Description of the issue[/]
-        - Auto-Fix ([language]): 
+        - Location: [cyan underline]path/to/file[/] : [bold yellow]Line XX[/]
+        - Issue: [bold red]Description (Security/Arch/Logic)[/]
+        - Auto-Fix:
         [green]
-        Corrected code snippet with line numbers and syntax highlighting (if applicable)[/]
+        (Corrected code snippet - no markdown blocks)
         [/]
-        - Senior Tip: [italic white]brief professional advice[/]
+        - Senior Tip: [italic white]Professional advice on avoiding this in the future[/]
 
-        If no issues are found, respond with:
-        [bold green]:white_check_mark: LGTM: All systems clear. Code satisfies CodeFox standards.[/]
-
-        Context:
-        Git diff of the current commit: 
-        {diff_text}
+        If no issues found:
+        [bold green]:white_check_mark: LGTM: All systems clear. Business logic is sound.[/]
         """
+
+        content = f"Analyze the following git diff and identify potential risks:\n\n{diff_text}"        
         
         return self.client.models.generate_content(
             model="gemini-3-flash-preview",
-            contents=promt,
+            contents=content,
             config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature=0.2,
                 tools=[
                     types.Tool(
                         file_search=types.FileSearch(
