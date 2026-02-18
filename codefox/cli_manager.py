@@ -23,7 +23,7 @@ class CLIManager:
 
     def run(self):
         if self.command == "version":
-            print('[green]CodeFox CLI version Alpha 0.1v[/green]')
+            print('[green]CodeFox CLI version Alpha 0.2v[/green]')
             return
 
         if self.command == "scan":

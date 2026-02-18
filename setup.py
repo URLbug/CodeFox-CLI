@@ -5,8 +5,8 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.txt").read_text(encoding="utf-8") if (HERE / "README.txt").exists() else ""
 
 setup(
-	name="codefox-cli",
-	version="0.1.0",
+	name="codefox",
+	version="0.2.0",
 	description="CodeFox CLI - code auditing and code review tool",
 	long_description=README,
 	long_description_content_type="text/plain",
