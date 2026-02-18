@@ -16,9 +16,12 @@ class Scan:
         diff_text = repo.git.diff(t)
 
         if not diff_text.strip():
-            print('[yellow]No changes detected in the current commit. Scanning entire codebase.[/yellow]')
+            print(
+                '[yellow]No changes detected in the current commit.'
+                'Scanning entire codebase.[/yellow]'
+            )
             return
-        
+
         isUpload, store = self.gemini.upload_files(os.getcwd())
         if not isUpload:
             print(f'[red]Failed to upload files to Gemini API: {store}[/red]')

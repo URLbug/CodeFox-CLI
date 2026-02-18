@@ -3,3 +3,4 @@ rich==14.3.2
 python-dotenv==1.2.1
 GitPython==3.1.46
 google-genai==1.63.0
+PyYAML==6.0.3
