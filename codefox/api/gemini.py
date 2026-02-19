@@ -13,7 +13,7 @@ from rich.progress import (
 from google import genai
 from google.genai import types
 
-from codefox.promts.promt_template import PromtTemplate
+from codefox.prompts.promt_template import PromtTemplate
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -117,20 +117,29 @@ class Gemini(BaseAPI):
 
             task = progress.add_task("Processing files...", total=total)
 
-            while True:
-                operations = [
-                    self.client.operations.get(op)
-                    for op in operations
-                ]
-
-                done_count = sum(1 if op.done else 0 for op in operations)
+            timeout = 600  # 10 minutes
+            start_time = time.time()
+            pending_ops = {op.name: op for op in operations}
+            while pending_ops:
+                if time.time() - start_time > timeout:
+                    return False, "Gemini file processing timed out."
+                
+                for name in list(pending_ops.keys()):
+                    op = self.client.operations.get(
+                        pending_ops[name]
+                    )
+                    if op.done:
+                        if op.error:
+                            print(f"File processing failed: {op.error.message}")
+                        pending_ops.pop(name)
+                
+                done_count = len(operations) - len(pending_ops)
                 progress.update(task, completed=done_count)
-
-                if done_count:
+                
+                if not pending_ops:
                     break
-
-                time.sleep(2)
-
+                time.sleep(2)        
+            
         return True, store
 
     def remove_files(self, store):
@@ -178,13 +187,18 @@ class Gemini(BaseAPI):
         )
 
     def _upload_thead_pool_files(
-            self,
-            store: types.FileSearchStore,
-            valid_files: list = []
+        self,
+        store: types.FileSearchStore,
+        valid_files: list | None = None
     ) -> list:
         """
         Upload many files to Gemini store
         """
+
+        valid_files = valid_files or []
+        if not valid_files:
+            return []
+        
         operations = []
         with Progress() as progress:
             task = progress.add_task(

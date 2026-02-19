@@ -1,6 +1,6 @@
-import codefox.promts.audit_system as audit_system
+import codefox.prompts.audit_system as audit_system
 
-from codefox.promts.template import Template
+from codefox.prompts.template import Template
 
 
 class PromtTemplate(Template):
