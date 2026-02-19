@@ -6,11 +6,7 @@ from openai import OpenAI
 
 from codefox.prompts.prompt_template import PromptTemplate
 from codefox.utils.helper import Helper
-from codefox.api.base_api import (
-    BaseAPI, 
-    ExecuteResponse, 
-    Response
-)
+from codefox.api.base_api import BaseAPI, ExecuteResponse, Response
 
 
 class Qwen(BaseAPI):
@@ -20,30 +16,33 @@ class Qwen(BaseAPI):
     def __init__(self, config=None):
         super().__init__(config)
 
-        if 'base_url' in self.model_config or self.model_config.get('base_url'):
-            self.base_url = self.model_config['base_url']
-        
-        if "qwen" not in self.model_config['name']:
+        if (
+            "base_url" in self.model_config
+            or self.model_config.get("base_url")
+        ):
+            self.base_url = self.model_config["base_url"]
+
+        if "qwen" not in self.model_config["name"]:
             raise ValueError("This API key is not compatible with Qwen models")
-        
+
         self.files = None
         self.client = OpenAI(
-            api_key=os.getenv("CODEFOX_API_KEY"), 
+            api_key=os.getenv("CODEFOX_API_KEY"),
             base_url=self.base_url,
-            timeout=self.model_config['timeout']
+            timeout=self.model_config["timeout"],
         )
-    
+
     def check_connection(self) -> bool:
         try:
             self.client.models.list()
             return True
         except Exception:
             return False
-    
+
     def check_model(self, name: str) -> bool:
         return name in self.get_tag_models()
-    
-    def execute(self, diff_text = "") -> ExecuteResponse:
+
+    def execute(self, diff_text="") -> ExecuteResponse:
         super().execute(diff_text)
 
         system_prompt = PromptTemplate(self.config)
@@ -53,24 +52,22 @@ class Qwen(BaseAPI):
         )
 
         completion = self.client.chat.completions.create(
-            model=self.model_config['name'],
+            model=self.model_config["name"],
             temperature=self.model_config["temperature"],
             messages=[
                 {"role": "system", "content": system_prompt.get()},
                 {
-                    "role": "user", 
+                    "role": "user",
                     "content": [
                         {"type": "text", "text": content},
-                        {"type": "text", "text": self._build_files_context()}
-                    ]
-                }
-            ]
-        )        
-        
-        return Response(
-            text=completion.choices[0].message.content
+                        {"type": "text", "text": self._build_files_context()},
+                    ],
+                },
+            ],
         )
-    
+
+        return Response(text=completion.choices[0].message.content)
+
     def remove_files(self) -> None:
         pass
 
@@ -83,7 +80,8 @@ class Qwen(BaseAPI):
             return True, None
 
         valid_files = [
-            f for f in Helper.get_all_files(path_files)
+            f
+            for f in Helper.get_all_files(path_files)
             if not any(ignored in f for ignored in ignored_paths)
         ]
 
@@ -94,32 +92,23 @@ class Qwen(BaseAPI):
                 with open(file, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
 
-                files.append({
-                    "path": file,
-                    "content": content
-                })
+                files.append({"path": file, "content": content})
             except Exception:
                 continue
 
         self.files = files
         return True, None
 
-    
     def get_tag_models(self) -> list:
         models = self.client.models.list()
-        return [
-            model.id
-            for model in models
-        ]
-    
+        return [model.id for model in models]
+
     def _build_files_context(self, max_chars: int = 12000) -> str:
         chunks = []
 
         for file in self.files:
             text = file["content"][:max_chars]
 
-            chunks.append(
-                f"<file path='{file['path']}'>\n{text}\n</file>"
-            )
+            chunks.append(f"<file path='{file['path']}'>\n{text}\n</file>")
 
         return "\n\n".join(chunks)

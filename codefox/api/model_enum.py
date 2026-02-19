@@ -19,8 +19,9 @@ class ModelEnum(enum.Enum):
         try:
             return cls[name.upper()]
         except KeyError:
+            available = [e.name.lower() for e in cls]
             raise ValueError(
-                f"Unknown provider '{name}'. Available: {[e.name.lower() for e in cls]}"
+                f"Unknown provider '{name}'. Available: {available}"
             ) from None
 
     @classmethod

@@ -39,8 +39,9 @@ class Scan:
         is_upload, error = self.model.upload_files(os.getcwd())
         if not is_upload:
             print(
-                "[red]Failed to upload files to model: " + 
-                escape(str(error)) + "[/red]"
+                "[red]Failed to upload files to model: "
+                + escape(str(error))
+                + "[/red]"
             )
             return
 

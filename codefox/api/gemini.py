@@ -74,7 +74,10 @@ class Gemini(BaseAPI):
         if not operations:
             return True, None
 
-        print("[yellow]Waiting for Gemini API " "to process uploaded files...[/yellow]")
+        print(
+            "[yellow]Waiting for Gemini API "
+            "to process uploaded files...[/yellow]"
+        )
         total = len(operations)
 
         with Progress(
@@ -87,7 +90,7 @@ class Gemini(BaseAPI):
 
             task = progress.add_task("Processing files...", total=total)
 
-            timeout = self.model_config['timeout']
+            timeout = self.model_config["timeout"]
             start_time = time.time()
             pending_ops = {op.name: op for op in operations}
             while pending_ops:
@@ -98,7 +101,10 @@ class Gemini(BaseAPI):
                     op = self.client.operations.get(pending_ops[name])
                     if op.done:
                         if op.error:
-                            print(f"File processing failed: {op.error.message}")
+                            print(
+                                "File processing failed: "
+                                f"{op.error.message}"
+                            )
                         pending_ops.pop(name)
 
                 done_count = len(operations) - len(pending_ops)
@@ -115,14 +121,18 @@ class Gemini(BaseAPI):
         if self.store is not None:
             try:
                 self.client.file_search_stores.delete(
-                    name=self.store.name, 
-                    config=types.DeleteFileSearchStoreConfig(force=True)
+                    name=self.store.name,
+                    config=types.DeleteFileSearchStoreConfig(force=True),
                 )
                 print(
-                    "Successfully removed" f"file search store: {self.store.name}"
+                    "Successfully removed "
+                    f"file search store: {self.store.name}"
                 )
             except Exception as e:
-                print("Error removing " f"file search store {self.store.name}: {e}")
+                print(
+                    "Error removing "
+                    f"file search store {self.store.name}: {e}"
+                )
         else:
             print("No file search store to remove")
 
@@ -169,7 +179,9 @@ class Gemini(BaseAPI):
 
             with ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as executor:
                 futures = {
-                    executor.submit(self._upload_single_file, file, store): file
+                    executor.submit(
+                        self._upload_single_file, file, store
+                    ): file
                     for file in valid_files
                 }
 
@@ -178,7 +190,10 @@ class Gemini(BaseAPI):
 
                     if error:
                         failed_file, exc = error
-                        print(f"[red]Error uploading {failed_file}: {exc}[/red]")
+                        print(
+                            f"[red]Error uploading {failed_file}: "
+                            f"{exc}[/red]"
+                        )
                     else:
                         operations.append(upload_op)
 

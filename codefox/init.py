@@ -46,7 +46,9 @@ class Init:
         print("[green]CodeFox CLI initialized successfully![/green]")
 
     def _ask_api_key(self) -> str | None:
-        api_key = input(f"Enter your API Key for {self.model_enum.name}: ").strip()
+        api_key = input(
+            f"Enter your API Key for {self.model_enum.name}: "
+        ).strip()
 
         if not self._is_valid_key(api_key):
             print("[red]Invalid API key format.[/red]")
@@ -58,10 +60,12 @@ class Init:
         if len(key) < 30:
             return False
 
-        valid_chars = set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=")
+        valid_chars = set(
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+        )
         if not all(c in valid_chars for c in key):
             return False
-        
+
         return True
 
     def _ensure_yaml_config(self) -> None:

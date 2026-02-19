@@ -26,7 +26,9 @@ class PromptTemplate(Template):
                 parts.append(audit_system.SYSTEM_CORE_PRIORITIES)
 
             if ruler.get("performance", True):
-                parts.append(audit_system.SYSTEM_REGRESSION_AND_IMPACT_ANALYSIS)
+                parts.append(
+                    audit_system.SYSTEM_REGRESSION_AND_IMPACT_ANALYSIS
+                )
 
             if ruler.get("style", True):
                 parts.append(audit_system.SYSTEM_SIGNAL_VS_NOISE_RULE)

@@ -46,4 +46,7 @@ class CLIManager:
             return
 
         print(f"[red]Unknown command: {self.command}[/red]")
-        print('[yellow]Please use flag "--help"', "to see available commands[/yellow]")
+        print(
+            '[yellow]Please use flag "--help"',
+            "to see available commands[/yellow]",
+        )

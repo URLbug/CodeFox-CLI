@@ -8,9 +8,11 @@ from codefox.utils.helper import Helper
 class ExecuteResponse(Protocol):
     text: str
 
+
 @dataclasses.dataclass
 class Response:
     text: str
+
 
 class BaseAPI(abc.ABC):
     def __init__(self, config: dict = None):
@@ -27,20 +29,30 @@ class BaseAPI(abc.ABC):
             raise ValueError("Missing required key 'model'")
 
         self.model_config = self.config["model"]
-        if "name" not in self.model_config or not self.model_config.get("name"):
+        if (
+            "name" not in self.model_config
+            or not self.model_config.get("name")
+        ):
             raise ValueError("Key 'model' missing required value key 'name'")
 
         if not self.model_config["name"].strip():
             raise ValueError("Model name cannot be empty")
 
-        if "max_tokens" not in self.model_config or not self.model_config.get("max_tokens"):
+        if "max_tokens" not in self.model_config or not self.model_config.get(
+            "max_tokens"
+        ):
             self.model_config["max_tokens"] = None
 
-        if "temperature" not in self.model_config or not self.model_config.get("temperature"):
+        if "temperature" not in self.model_config or not self.model_config.get(
+            "temperature"
+        ):
             self.model_config["temperature"] = 0.2
-        
-        if "timeout" not in self.model_config or not self.model_config.get("timeout"):
-            self.model_config['timeout'] = 600
+
+        if (
+            "timeout" not in self.model_config
+            or not self.model_config.get("timeout")
+        ):
+            self.model_config["timeout"] = 600
 
     @abc.abstractmethod
     def check_model(self, name: str) -> bool:
@@ -64,4 +76,3 @@ class BaseAPI(abc.ABC):
 
     def get_tag_models(self) -> list:
         return []
- 
