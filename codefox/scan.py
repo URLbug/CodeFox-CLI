@@ -14,7 +14,9 @@ class Scan:
     def execute(self):
         diff_text = Helper.get_diff()
         if not diff_text:
-            print("[yellow]Repository is not found or not have change[/yellow]")
+            print(
+                "[yellow]Repository is not found or not have change[/yellow]"
+            )
             return
 
         if not self.model.check_connection():
