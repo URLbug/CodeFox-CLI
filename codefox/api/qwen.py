@@ -50,7 +50,7 @@ class Qwen(BaseAPI):
             model=self.model_config["name"],
             temperature=self.model_config["temperature"],
             timeout=self.model_config["timeout"],
-            max_tokens=self.model_config["max_token"],
+            max_tokens=self.model_config["max_tokens"],
             messages=[
                 {"role": "system", "content": system_prompt.get()},
                 {
