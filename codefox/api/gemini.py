@@ -17,28 +17,17 @@ from codefox.prompts.prompt_template import PromptTemplate
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from codefox.api.base_api import BaseAPI
+from codefox.api.base_api import BaseAPI, ExecuteResponse
 from codefox.utils.helper import Helper
 
 
 class Gemini(BaseAPI):
+    default_model_name = "gemini-2.0-flash"
     MAX_WORKERS = 10
-    SUPPORTED_EXTENSIONS = {
-        ".py",
-        ".js",
-        ".java",
-        ".cpp",
-        ".c",
-        ".cs",
-        ".go",
-        ".rb",
-        ".php",
-        ".ts",
-        ".swift",
-    }
 
     def __init__(self):
         super().__init__()
+        self.store = None
         self.client = genai.Client(api_key=os.getenv("CODEFOX_API_KEY"))
 
     def check_model(self, name: str) -> bool:
@@ -72,35 +61,18 @@ class Gemini(BaseAPI):
             return False, f"Error creating file search store: {e}"
 
         if self.config.get("diff_only", False):
-            return True, store
-
-        all_files_to_upload = []
-        for root, _, files in os.walk(path_files):
-            if any(
-                ignored in root
-                for ignored in [
-                    ".git",
-                    "__pycache__",
-                    "node_modules",
-                ]
-                + ignored_paths
-            ):
-                continue
-
-            for filename in files:
-                ext = os.path.splitext(filename)[1].lower()
-                if ext in self.SUPPORTED_EXTENSIONS:
-                    all_files_to_upload.append(os.path.join(root, filename))
+            self.store = store
+            return True, None
 
         valid_files = [
             f
-            for f in all_files_to_upload
+            for f in Helper.get_all_files(path_files)
             if not any(ignored in f for ignored in ignored_paths)
         ]
 
         operations = self._upload_thread_pool_files(store, valid_files)
         if not operations:
-            return True, store
+            return True, None
 
         print("[yellow]Waiting for Gemini API " "to process uploaded files...[/yellow]")
         total = len(operations)
@@ -115,7 +87,7 @@ class Gemini(BaseAPI):
 
             task = progress.add_task("Processing files...", total=total)
 
-            timeout = 600  # 10 minutes
+            timeout = self.model_config['timeout']
             start_time = time.time()
             pending_ops = {op.name: op for op in operations}
             while pending_ops:
@@ -136,22 +108,25 @@ class Gemini(BaseAPI):
                     break
                 time.sleep(2)
 
-        return True, store
+        self.store = store
+        return True, None
 
-    def remove_files(self, store):
-        try:
-            self.client.file_search_stores.delete(
-                name=store.name, config=types.DeleteFileSearchStoreConfig(force=True)
-            )
-            print(
-                "[green]Successfully removed" f"file search store: {store.name}[/green]"
-            )
-        except Exception as e:
-            print("[red]Error removing " f"file search store {store.name}: {e}[/red]")
+    def remove_files(self):
+        if self.store is not None:
+            try:
+                self.client.file_search_stores.delete(
+                    name=self.store.name, 
+                    config=types.DeleteFileSearchStoreConfig(force=True)
+                )
+                print(
+                    "Successfully removed" f"file search store: {self.store.name}"
+                )
+            except Exception as e:
+                print("Error removing " f"file search store {self.store.name}: {e}")
+        else:
+            print("No file search store to remove")
 
-    def execute(self, store, diff_text=""):
-        super().execute()
-
+    def execute(self, diff_text: str) -> ExecuteResponse:
         system_prompt = PromptTemplate(self.config)
         content = (
             "Analyze the following git diff"
@@ -168,7 +143,7 @@ class Gemini(BaseAPI):
                 tools=[
                     types.Tool(
                         file_search=types.FileSearch(
-                            file_search_store_names=[store.name]
+                            file_search_store_names=[self.store.name]
                         )
                     )
                 ],

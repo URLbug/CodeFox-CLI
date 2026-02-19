@@ -4,18 +4,29 @@ from pathlib import Path
 
 from dotenv import load_dotenv, set_key
 
-from rich.prompt import Confirm
+from rich.prompt import Confirm, Prompt
 from rich import print
 
 from codefox.api.base_api import BaseAPI
+from codefox.api.model_enum import ModelEnum
 
 
 class Init:
-    def __init__(self, model: BaseAPI):
-        self.model = model
+    def __init__(self, model_enum: ModelEnum | None = None):
+        self.model_enum = model_enum or self._ask_model()
+        self.api_class: type[BaseAPI] = self.model_enum.api_class
         self.config_path = Path(".codefoxenv")
         self.ignore_path = Path(".codefoxignore")
         self.yaml_config_path = Path(".codefox.yml")
+
+    def _ask_model(self) -> ModelEnum:
+        names = ModelEnum.names()
+        choice = Prompt.ask(
+            f"[yellow]Select provider[/yellow] ({', '.join(names)})",
+            default=names[0],
+            choices=names,
+        )
+        return ModelEnum.by_name(choice)
 
     def execute(self) -> None:
         api_key = self._ask_api_key()
@@ -35,7 +46,7 @@ class Init:
         print("[green]CodeFox CLI initialized successfully![/green]")
 
     def _ask_api_key(self) -> str | None:
-        api_key = input("Enter your model API Key (Gemini): ").strip()
+        api_key = input(f"Enter your API Key for {self.model_enum.name}: ").strip()
 
         if not self._is_valid_key(api_key):
             print("[red]Invalid API key format.[/red]")
@@ -44,7 +55,14 @@ class Init:
         return api_key
 
     def _is_valid_key(self, key: str) -> bool:
-        return len(key) >= 30
+        if len(key) < 30:
+            return False
+
+        valid_chars = set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=")
+        if not all(c in valid_chars for c in key):
+            return False
+        
+        return True
 
     def _ensure_yaml_config(self) -> None:
         if self.yaml_config_path.exists():
@@ -59,9 +77,13 @@ class Init:
         try:
             print("[yellow]Creating .codefox.yml...[/yellow]")
 
+            default_model_name = getattr(
+                self.api_class, "default_model_name", "gemini-2.0-flash"
+            )
             default_config = {
+                "provider": self.model_enum.name.lower(),
                 "model": {
-                    "name": "gemini-3-flash-preview",
+                    "name": default_model_name,
                     "temperature": 0.2,
                     "max_tokens": 4000,
                 },
@@ -157,7 +179,7 @@ class Init:
     def _check_connection(self) -> bool:
         print("[yellow]Checking model connection...[/yellow]")
 
-        model = self.model()
+        model = self.api_class()
         if not model.check_connection():
             print(
                 "[red]Failed to connect to model API. "

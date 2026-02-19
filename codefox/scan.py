@@ -1,14 +1,15 @@
 import os
 
 from rich import print
+from rich.markup import escape
 
 from codefox.utils.helper import Helper
-from codefox.api.gemini import Gemini
+from codefox.api.base_api import BaseAPI
 
 
 class Scan:
-    def __init__(self):
-        self.gemini = Gemini()
+    def __init__(self, model: BaseAPI):
+        self.model = model()
 
     def execute(self):
         diff_text = Helper.get_diff()
@@ -16,13 +17,13 @@ class Scan:
             print("[yellow]Repository is not found[/yellow]")
             return
 
-        if not self.gemini.check_connection():
-            print("[red]Failed to connect to Gemini API[/red]")
+        if not self.model.check_connection():
+            print("[red]Failed to connect to model[/red]")
             return
 
-        name = self.gemini.model_config["name"]
-        if not self.gemini.check_model(name):
-            available_models = "\n".join(self.gemini.get_tag_models())
+        name = self.model.model_config["name"]
+        if not self.model.check_model(name):
+            available_models = "\n".join(self.model.get_tag_models())
 
             print(f"[red]Model '{name}' not found.")
             print(f"Available models:\n{available_models}")
@@ -35,16 +36,20 @@ class Scan:
             )
             return
 
-        isUpload, store = self.gemini.upload_files(os.getcwd())
-        if not isUpload:
-            print(f"[red]Failed to upload files to Gemini API: {store}[/red]")
+        is_upload, error = self.model.upload_files(os.getcwd())
+        if not is_upload:
+            print(
+                "[red]Failed to upload files to model: " + 
+                escape(str(error)) + "[/red]"
+            )
             return
 
-        print("[yellow]Waiting for Gemini API response...[/yellow]")
+        print("[yellow]Waiting for model response...[/yellow]")
         try:
-            response = self.gemini.execute(store, diff_text)
-            print(f"[green]Scan result from Gemini API:[/green]\n{response.text}")
+            response = self.model.execute(diff_text)
+            print(f"[green]Scan result from model:[/green]\n{response.text}")
         except Exception as e:
-            print(f"[red]Failed scan: {e}[/red]")
+            err_str = str(e)
+            print("[red]Failed scan: " + escape(err_str) + "[/red]")
 
-        self.gemini.remove_files(store)
+        self.model.remove_files()

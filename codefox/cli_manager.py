@@ -5,8 +5,8 @@ from rich import print
 
 from codefox.scan import Scan
 from codefox.init import Init
-
-from codefox.api.gemini import Gemini
+from codefox.utils.helper import Helper
+from codefox.api.model_enum import ModelEnum
 
 
 class CLIManager:
@@ -24,18 +24,24 @@ class CLIManager:
                 "Please ensure it exists and is properly formatted."
             )
 
+    def _get_api_class(self):
+        config = Helper.read_yml(".codefox.yml")
+        provider = config.get("provider", "gemini")
+        return ModelEnum.by_name(provider).api_class
+
     def run(self):
         if self.command == "version":
             print("[green]CodeFox CLI version Alpha 0.2v[/green]")
             return
 
         if self.command == "scan":
-            scan = Scan()
+            api_class = self._get_api_class()
+            scan = Scan(api_class)
             scan.execute()
             return
 
         if self.command == "init":
-            init = Init(Gemini)
+            init = Init()
             init.execute()
             return
 

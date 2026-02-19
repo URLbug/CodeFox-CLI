@@ -1,7 +1,16 @@
 import abc
+import dataclasses
+from typing import Protocol
 
 from codefox.utils.helper import Helper
 
+
+class ExecuteResponse(Protocol):
+    text: str
+
+@dataclasses.dataclass
+class Response:
+    text: str
 
 class BaseAPI(abc.ABC):
     def __init__(self, config: dict = None):
@@ -21,18 +30,24 @@ class BaseAPI(abc.ABC):
         if "name" not in self.model_config or not self.model_config.get("name"):
             raise ValueError("Key 'model' missing required value key 'name'")
 
-        if "max_tokens" not in self.model_config:
+        if not self.model_config["name"].strip():
+            raise ValueError("Model name cannot be empty")
+
+        if "max_tokens" not in self.model_config or not self.model_config.get("max_tokens"):
             self.model_config["max_tokens"] = None
 
-        if "temperature" not in self.model_config:
+        if "temperature" not in self.model_config or not self.model_config.get("temperature"):
             self.model_config["temperature"] = 0.2
+        
+        if "timeout" not in self.model_config or not self.model_config.get("timeout"):
+            self.model_config['timeout'] = 600
 
     @abc.abstractmethod
     def check_model(self, name: str) -> bool:
         pass
 
     @abc.abstractmethod
-    def execute(self) -> str:
+    def execute(self, diff_text: str) -> ExecuteResponse:
         pass
 
     @abc.abstractmethod
@@ -42,3 +57,11 @@ class BaseAPI(abc.ABC):
     @abc.abstractmethod
     def upload_files(self, path_files: str) -> tuple:
         pass
+
+    @abc.abstractmethod
+    def remove_files(self) -> None:
+        pass
+
+    def get_tag_models(self) -> list:
+        return []
+ 
