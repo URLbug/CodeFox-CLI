@@ -30,7 +30,7 @@ class BaseAPI(abc.ABC):
         if "model" not in self.config or not self.config.get("model"):
             raise ValueError("Missing required key 'model'")
 
-        self.model_config = self.config["model"]
+        self.model_config: dict[str, Any] = self.config["model"]
         if "name" not in self.model_config or not self.model_config.get(
             "name"
         ):
@@ -43,6 +43,11 @@ class BaseAPI(abc.ABC):
             "max_tokens"
         ):
             self.model_config["max_tokens"] = None
+
+        if "max_completion_tokens" not in self.model_config or not self.model_config.get(
+            "max_completion_tokens"
+        ):
+            self.model_config["max_completion_tokens"] = None
 
         if "temperature" not in self.model_config or not self.model_config.get(
             "temperature"

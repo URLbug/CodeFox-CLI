@@ -1,4 +1,5 @@
 import os
+import math
 from typing import Any
 
 from openai import OpenAI
@@ -25,6 +26,7 @@ class Qwen(BaseAPI):
             raise ValueError("This API key is not compatible with Qwen models")
 
         self.files: list[dict[str, Any]] | None = None
+        self.index: list[dict[str, Any]] = []
         self.client = OpenAI(
             api_key=os.getenv("CODEFOX_API_KEY"), base_url=self.base_url
         )
@@ -46,18 +48,26 @@ class Qwen(BaseAPI):
             f"and identify potential risks:\n\n{diff_text}"
         )
 
+        rag_chunks = self._search(diff_text, k=8)
+
+        files_context = "\n\n".join(
+            f"<file path='{c['path']}'>\n{c['text']}\n</file>"
+            for c in rag_chunks
+        )
+
         completion = self.client.chat.completions.create(
             model=self.model_config["name"],
             temperature=self.model_config["temperature"],
             timeout=self.model_config["timeout"],
             max_tokens=self.model_config["max_tokens"],
+            max_completion_tokens=self.model_config['max_completion_tokens'],
             messages=[
                 {"role": "system", "content": system_prompt.get()},
                 {
                     "role": "user",
                     "content": [
                         {"type": "text", "text": content},
-                        {"type": "text", "text": self._build_files_context()},
+                        {"type": "text", "text": files_context},
                     ],
                 },
             ],
@@ -82,8 +92,7 @@ class Qwen(BaseAPI):
         ]
 
         files = []
-
-        for file in track(valid_files):
+        for file in track(valid_files, description="Progress read files..."):
             try:
                 with open(file, encoding="utf-8", errors="ignore") as f:
                     content = f.read()
@@ -91,6 +100,24 @@ class Qwen(BaseAPI):
                 files.append({"path": file, "content": content})
             except Exception:
                 continue
+        
+        self.index = []
+        for file in track(files, description="Progress files processing..."):
+            chunks = self._chunk_text(file["content"])
+            
+            if not chunks:
+                continue
+
+            embeddings = self._embed(chunks)
+
+            for chunk, emb in zip(chunks, embeddings):
+                self.index.append(
+                    {
+                        "path": file["path"],
+                        "text": chunk,
+                        "embedding": emb,
+                    }
+                )
 
         self.files = files
         return True, None
@@ -98,13 +125,40 @@ class Qwen(BaseAPI):
     def get_tag_models(self) -> list:
         models = self.client.models.list()
         return [model.id for model in models]
+    
+    def _chunk_text(self, text: str, size: int = 800) -> list[str]:
+        raw_chunks = [text[i:i+size] for i in range(0, len(text), size)]
+        return [c for c in raw_chunks if c.strip()]
 
-    def _build_files_context(self, max_chars: int = 12000) -> str:
-        chunks = []
-        files = self.files or []
-        for file in files:
-            text = file["content"][:max_chars]
+    def _embed(self, texts: list[str]) -> list[list[float]]:
+        clean_texts = [t for t in texts if t and t.strip()]
 
-            chunks.append(f"<file path='{file['path']}'>\n{text}\n</file>")
+        if not clean_texts:
+            return []
+    
+        resp = self.client.embeddings.create(
+            model="text-embedding-3-small",
+            input=clean_texts,
+        )
 
-        return "\n\n".join(chunks)
+        if not resp.data:
+            return []
+
+        return [d.embedding for d in resp.data]
+    
+    def _cosine(self, a, b):
+        dot = sum(x*y for x, y in zip(a, b))
+        na = math.sqrt(sum(x*x for x in a))
+        nb = math.sqrt(sum(x*x for x in b))
+        return dot / (na * nb + 1e-8)
+    
+    def _search(self, query: str, k: int = 5) -> list[dict]:
+        query_emb = self._embed([query])[0]
+
+        scored = [
+            (self._cosine(query_emb, item["embedding"]), item)
+            for item in self.index
+        ]
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [item for _, item in scored[:k]]

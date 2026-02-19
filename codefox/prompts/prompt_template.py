@@ -40,6 +40,7 @@ class PromptTemplate(Template):
                 parts.append(audit_system.SYSTEM_DIFF_AWARE_RULES)
 
             parts.append(audit_system.SYSTEM_SEVERITY_MODEL)
+            parts.append(audit_system.SYSTEM_NO_FAKE_STATISTICS)
             parts.append(audit_system.SYSTEM_CONTEXT_SUFFICIENCY_POLICY)
 
             parts.append(audit_system.SYSTEM_STRICT_FORMATTING_RULES)
