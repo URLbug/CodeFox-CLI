@@ -3,10 +3,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 from rich import print
 
-from codefox.scan import Scan
-from codefox.init import Init
-from codefox.utils.helper import Helper
 from codefox.api.model_enum import ModelEnum
+from codefox.init import Init
+from codefox.scan import Scan
+from codefox.utils.helper import Helper
 
 
 class CLIManager:

@@ -1,12 +1,11 @@
 import os
 
+from openai import OpenAI
 from rich.progress import track
 
-from openai import OpenAI
-
+from codefox.api.base_api import BaseAPI, ExecuteResponse, Response
 from codefox.prompts.prompt_template import PromptTemplate
 from codefox.utils.helper import Helper
-from codefox.api.base_api import BaseAPI, ExecuteResponse, Response
 
 
 class Qwen(BaseAPI):
@@ -16,9 +15,8 @@ class Qwen(BaseAPI):
     def __init__(self, config=None):
         super().__init__(config)
 
-        if (
-            "base_url" in self.model_config
-            or self.model_config.get("base_url")
+        if "base_url" in self.model_config or self.model_config.get(
+            "base_url"
         ):
             self.base_url = self.model_config["base_url"]
 
@@ -89,7 +87,7 @@ class Qwen(BaseAPI):
 
         for file in track(valid_files):
             try:
-                with open(file, "r", encoding="utf-8", errors="ignore") as f:
+                with open(file, encoding="utf-8", errors="ignore") as f:
                     content = f.read()
 
                 files.append({"path": file, "content": content})

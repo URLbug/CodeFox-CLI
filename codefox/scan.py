@@ -3,12 +3,12 @@ import os
 from rich import print
 from rich.markup import escape
 
-from codefox.utils.helper import Helper
 from codefox.api.base_api import BaseAPI
+from codefox.utils.helper import Helper
 
 
 class Scan:
-    def __init__(self, model: BaseAPI):
+    def __init__(self, model: type[BaseAPI]):
         self.model = model()
 
     def execute(self):

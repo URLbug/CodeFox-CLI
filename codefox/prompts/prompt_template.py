@@ -1,5 +1,4 @@
 import codefox.prompts.audit_system as audit_system
-
 from codefox.prompts.template import Template
 
 

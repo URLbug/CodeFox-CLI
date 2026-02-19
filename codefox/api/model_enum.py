@@ -1,5 +1,4 @@
 import enum
-from typing import Type
 
 from codefox.api.base_api import BaseAPI
 from codefox.api.gemini import Gemini
@@ -11,7 +10,7 @@ class ModelEnum(enum.Enum):
     QWEN = Qwen
 
     @property
-    def api_class(self) -> Type[BaseAPI]:
+    def api_class(self) -> type[BaseAPI]:
         return self.value
 
     @classmethod

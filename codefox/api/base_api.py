@@ -29,9 +29,8 @@ class BaseAPI(abc.ABC):
             raise ValueError("Missing required key 'model'")
 
         self.model_config = self.config["model"]
-        if (
-            "name" not in self.model_config
-            or not self.model_config.get("name")
+        if "name" not in self.model_config or not self.model_config.get(
+            "name"
         ):
             raise ValueError("Key 'model' missing required value key 'name'")
 
@@ -48,9 +47,8 @@ class BaseAPI(abc.ABC):
         ):
             self.model_config["temperature"] = 0.2
 
-        if (
-            "timeout" not in self.model_config
-            or not self.model_config.get("timeout")
+        if "timeout" not in self.model_config or not self.model_config.get(
+            "timeout"
         ):
             self.model_config["timeout"] = 600
 

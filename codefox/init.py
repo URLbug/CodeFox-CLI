@@ -1,11 +1,9 @@
-import yaml
-
 from pathlib import Path
 
+import yaml
 from dotenv import load_dotenv, set_key
-
-from rich.prompt import Confirm, Prompt
 from rich import print
+from rich.prompt import Confirm, Prompt
 
 from codefox.api.base_api import BaseAPI
 from codefox.api.model_enum import ModelEnum
@@ -122,10 +120,8 @@ class Init:
     def _write_config(self, api_key: str) -> bool:
         if self.config_path.exists():
             overwrite = Confirm.ask(
-                (
-                    "[yellow].codefoxenv already exists. Overwrite"
-                    ".codefoxenv?[/yellow]"
-                )
+                "[yellow].codefoxenv already exists. Overwrite"
+                ".codefoxenv?[/yellow]"
             )
             if not overwrite:
                 print("[blue]Skipping .codefoxenv update.[/blue]")

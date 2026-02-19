@@ -1,8 +1,8 @@
-import git
 import os
-import yaml
-
 from pathlib import Path
+
+import git
+import yaml
 
 
 class Helper:
@@ -26,7 +26,7 @@ class Helper:
         if not path.exists():
             raise FileNotFoundError(f"Not found file with {path}")
 
-        with open(path, "r", encoding="utf-8") as file:
+        with open(path, encoding="utf-8") as file:
             config_data = yaml.safe_load(file)
 
         return config_data
@@ -38,7 +38,7 @@ class Helper:
             return []
 
         ignored_paths = []
-        with open(ignore, "r", encoding="utf-8") as ignore_file:
+        with open(ignore, encoding="utf-8") as ignore_file:
             ignored_paths = [
                 line.strip()
                 for line in ignore_file

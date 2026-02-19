@@ -1,23 +1,20 @@
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from google import genai
+from google.genai import types
 from rich import print
 from rich.progress import (
+    BarColumn,
     Progress,
     SpinnerColumn,
-    BarColumn,
     TextColumn,
     TimeElapsedColumn,
 )
 
-from google import genai
-from google.genai import types
-
-from codefox.prompts.prompt_template import PromptTemplate
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
 from codefox.api.base_api import BaseAPI, ExecuteResponse
+from codefox.prompts.prompt_template import PromptTemplate
 from codefox.utils.helper import Helper
 
 
@@ -25,8 +22,8 @@ class Gemini(BaseAPI):
     default_model_name = "gemini-2.0-flash"
     MAX_WORKERS = 10
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config: dict | None = None):
+        super().__init__(config)
         self.store = None
         self.client = genai.Client(api_key=os.getenv("CODEFOX_API_KEY"))
 
@@ -87,7 +84,6 @@ class Gemini(BaseAPI):
             TextColumn("{task.completed}/{task.total}"),
             TimeElapsedColumn(),
         ) as progress:
-
             task = progress.add_task("Processing files...", total=total)
 
             timeout = self.model_config["timeout"]
@@ -102,8 +98,7 @@ class Gemini(BaseAPI):
                     if op.done:
                         if op.error:
                             print(
-                                "File processing failed: "
-                                f"{op.error.message}"
+                                f"File processing failed: {op.error.message}"
                             )
                         pending_ops.pop(name)
 
@@ -130,8 +125,7 @@ class Gemini(BaseAPI):
                 )
             except Exception as e:
                 print(
-                    "Error removing "
-                    f"file search store {self.store.name}: {e}"
+                    f"Error removing file search store {self.store.name}: {e}"
                 )
         else:
             print("No file search store to remove")
@@ -191,8 +185,7 @@ class Gemini(BaseAPI):
                     if error:
                         failed_file, exc = error
                         print(
-                            f"[red]Error uploading {failed_file}: "
-                            f"{exc}[/red]"
+                            f"[red]Error uploading {failed_file}: {exc}[/red]"
                         )
                     else:
                         operations.append(upload_op)
