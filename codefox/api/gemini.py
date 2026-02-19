@@ -45,14 +45,13 @@ class Gemini(BaseAPI):
             (model.name or "").replace("models/", "")
             for model in page
             if (
-                model.supported_actions and
-                "generateContent" in model.supported_actions
+                model.supported_actions
+                and "generateContent" in model.supported_actions
             )
         ]
 
     def upload_files(
-            self,
-            path_files: str
+        self, path_files: str
     ) -> tuple[bool, str | types.FileSearchStore | None]:
         ignored_paths = Helper.read_codefoxignore()
 
@@ -156,9 +155,7 @@ class Gemini(BaseAPI):
                 tools=[
                     types.Tool(
                         file_search=types.FileSearch(
-                            file_search_store_names=[
-                                self.store.name or ""
-                            ]
+                            file_search_store_names=[self.store.name or ""]
                         )
                     )
                 ],

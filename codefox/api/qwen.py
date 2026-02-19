@@ -26,8 +26,7 @@ class Qwen(BaseAPI):
 
         self.files: list[dict[str, Any]] | None = None
         self.client = OpenAI(
-            api_key=os.getenv("CODEFOX_API_KEY"),
-            base_url=self.base_url
+            api_key=os.getenv("CODEFOX_API_KEY"), base_url=self.base_url
         )
 
     def check_connection(self) -> bool:
@@ -50,8 +49,8 @@ class Qwen(BaseAPI):
         completion = self.client.chat.completions.create(
             model=self.model_config["name"],
             temperature=self.model_config["temperature"],
-            timeout=self.model_config['timeout'],
-            max_tokens=self.model_config['max_token'],
+            timeout=self.model_config["timeout"],
+            max_tokens=self.model_config["max_token"],
             messages=[
                 {"role": "system", "content": system_prompt.get()},
                 {
