@@ -44,10 +44,16 @@ class Gemini(BaseAPI):
         return [
             (model.name or "").replace("models/", "")
             for model in page
-            if model.supported_actions and "generateContent" in model.supported_actions
+            if (
+                model.supported_actions and
+                "generateContent" in model.supported_actions
+            )
         ]
 
-    def upload_files(self, path_files: str) -> tuple[bool, str | types.FileSearchStore | None]:
+    def upload_files(
+            self,
+            path_files: str
+    ) -> tuple[bool, str | types.FileSearchStore | None]:
         ignored_paths = Helper.read_codefoxignore()
 
         try:
@@ -132,7 +138,9 @@ class Gemini(BaseAPI):
 
     def execute(self, diff_text: str) -> ExecuteResponse:
         if self.store is None:
-            raise RuntimeError("File store not initialized; run upload_files first")
+            raise RuntimeError(
+                "File store not initialized; run upload_files first"
+            )
         system_prompt = PromptTemplate(self.config)
         content = (
             "Analyze the following git diff"
