@@ -35,6 +35,10 @@ class BaseAPI(abc.ABC):
             self.model_config['temperature'] = 0.2
 
     @abc.abstractmethod
+    def check_model(self, name: str) -> bool:
+        pass
+
+    @abc.abstractmethod
     def execute(self) -> str:
         pass
 

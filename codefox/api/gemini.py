@@ -41,6 +41,9 @@ class Gemini(BaseAPI):
         super().__init__()
         self.client = genai.Client(api_key=os.getenv('CODEFOX_API_KEY'))
 
+    def check_model(self, name: str) -> bool:
+        return name in self.get_tag_models()
+
     def check_connection(self) -> bool:
         try:
             self.client.models.list()
@@ -48,6 +51,14 @@ class Gemini(BaseAPI):
         except Exception as e:
             print(f'[red]Failed to connect to Gemini API: {e}[/red]')
             return False
+
+    def get_tag_models(self) -> list:
+        response = self.client.models.list()
+        return [
+            model.name.replace('models/', '')
+            for model in response.page
+            if 'generateContent' in model.supported_actions
+        ]
 
     def upload_files(self, path_files: str) -> tuple:
         super().upload_files(path_files)
@@ -60,6 +71,9 @@ class Gemini(BaseAPI):
             )
         except Exception as e:
             return False, f"Error creating file search store: {e}"
+
+        if self.config.get('diff_only', False):
+            return False, store
 
         all_files_to_upload = []
         for root, _, files in os.walk(path_files):
