@@ -1,6 +1,7 @@
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any
 
 from google import genai
 from google.genai import types
@@ -13,7 +14,7 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from codefox.api.base_api import BaseAPI, ExecuteResponse
+from codefox.api.base_api import BaseAPI, ExecuteResponse, Response
 from codefox.prompts.prompt_template import PromptTemplate
 from codefox.utils.helper import Helper
 
@@ -22,9 +23,9 @@ class Gemini(BaseAPI):
     default_model_name = "gemini-2.0-flash"
     MAX_WORKERS = 10
 
-    def __init__(self, config: dict | None = None):
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
         super().__init__(config)
-        self.store = None
+        self.store: types.FileSearchStore | None = None
         self.client = genai.Client(api_key=os.getenv("CODEFOX_API_KEY"))
 
     def check_model(self, name: str) -> bool:
@@ -37,17 +38,16 @@ class Gemini(BaseAPI):
         except Exception:
             return False
 
-    def get_tag_models(self) -> list:
+    def get_tag_models(self) -> list[str]:
         response = self.client.models.list()
+        page = response.page or []
         return [
-            model.name.replace("models/", "")
-            for model in response.page
-            if "generateContent" in model.supported_actions
+            (model.name or "").replace("models/", "")
+            for model in page
+            if model.supported_actions and "generateContent" in model.supported_actions
         ]
 
-    def upload_files(self, path_files: str) -> tuple:
-        super().upload_files(path_files)
-
+    def upload_files(self, path_files: str) -> tuple[bool, str | types.FileSearchStore | None]:
         ignored_paths = Helper.read_codefoxignore()
 
         try:
@@ -131,13 +131,14 @@ class Gemini(BaseAPI):
             print("No file search store to remove")
 
     def execute(self, diff_text: str) -> ExecuteResponse:
+        if self.store is None:
+            raise RuntimeError("File store not initialized; run upload_files first")
         system_prompt = PromptTemplate(self.config)
         content = (
             "Analyze the following git diff"
             f"and identify potential risks:\n\n{diff_text}"
         )
-
-        return self.client.models.generate_content(
+        response = self.client.models.generate_content(
             model=self.model_config["name"],
             contents=content,
             config=types.GenerateContentConfig(
@@ -147,12 +148,15 @@ class Gemini(BaseAPI):
                 tools=[
                     types.Tool(
                         file_search=types.FileSearch(
-                            file_search_store_names=[self.store.name]
+                            file_search_store_names=[
+                                self.store.name or ""
+                            ]
                         )
                     )
                 ],
             ),
         )
+        return Response(text=response.text or "")
 
     def _upload_thread_pool_files(
         self, store: types.FileSearchStore, valid_files: list | None = None
@@ -204,7 +208,7 @@ class Gemini(BaseAPI):
             file_stores = self.client.file_search_stores
 
             upload_op = file_stores.upload_to_file_search_store(
-                file_search_store_name=store.name,
+                file_search_store_name=store.name or "",
                 file=file_path,
                 config={"mime_type": "text/plain"},
             )

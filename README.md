@@ -118,11 +118,17 @@ codefox --command scan
 
 ## 🛠 Development
 
-Install with dev dependencies:
+Install with dev dependencies (includes pytest, mypy, ruff, types-PyYAML):
 
+**pip:**
 ```bash
 pip install -e ".[dev]"
-# or: uv pip install -e ".[dev]"
+# or: pip install -r requirements.txt -r requirements-dev.txt
+```
+
+**uv:**
+```bash
+uv pip install -e ".[dev]"
 ```
 
 Run tests:

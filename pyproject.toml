@@ -20,6 +20,7 @@ dev = [
     "pytest-cov>=4.0",
     "mypy>=1.0",
     "ruff>=0.8",
+    "types-PyYAML>=6.0",
 ]
 
 [project.scripts]

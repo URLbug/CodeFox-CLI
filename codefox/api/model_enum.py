@@ -1,4 +1,5 @@
 import enum
+from typing import cast
 
 from codefox.api.base_api import BaseAPI
 from codefox.api.gemini import Gemini
@@ -11,7 +12,7 @@ class ModelEnum(enum.Enum):
 
     @property
     def api_class(self) -> type[BaseAPI]:
-        return self.value
+        return cast(type[BaseAPI], self.value)
 
     @classmethod
     def by_name(cls, name: str) -> "ModelEnum":

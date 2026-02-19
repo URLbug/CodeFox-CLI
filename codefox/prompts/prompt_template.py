@@ -1,9 +1,11 @@
+from typing import Any, cast
+
 import codefox.prompts.audit_system as audit_system
 from codefox.prompts.template import Template
 
 
 class PromptTemplate(Template):
-    def __init__(self, config: dict):
+    def __init__(self, config: dict[str, Any]) -> None:
         self.config = config
 
     def get(self) -> str:
@@ -55,9 +57,10 @@ Auto-fix: {review.get("suggest_fixes")}
 Diff-only mode: {review.get("diff_only")}
 """)
 
-        if review.get("severity"):
+        severity = review.get("severity")
+        if severity:
             parts.append(f"""
-Report only issues with severity >= {review.get("severity").upper()}
+Report only issues with severity >= {(severity or "").upper()}
 """)
 
         if review.get("max_issues"):
@@ -70,7 +73,7 @@ Limit the output to the {review.get("max_issues")} most critical findings.
 
         return "\n".join(p.strip() for p in parts if p).strip()
 
-    def _get_config(self, key: str) -> dict | object:
+    def _get_config(self, key: str) -> dict[str, Any]:
         if key not in self.config:
             raise ValueError(f"Missing required config field: '{key}'")
-        return self.config[key]
+        return cast(dict[str, Any], self.config[key])

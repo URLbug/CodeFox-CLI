@@ -61,7 +61,7 @@ class Init:
         valid_chars = set(
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
         )
-        if not all(c in valid_chars for c in key):
+        if not any(c in valid_chars for c in key):
             return False
 
         return True

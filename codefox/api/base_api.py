@@ -1,6 +1,6 @@
 import abc
 import dataclasses
-from typing import Protocol
+from typing import Any, Protocol
 
 from codefox.utils.helper import Helper
 
@@ -15,10 +15,12 @@ class Response:
 
 
 class BaseAPI(abc.ABC):
-    def __init__(self, config: dict = None):
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
         super().__init__()
         try:
-            self.config = config or Helper.read_yml(".codefox.yml")
+            self.config: dict[str, Any] = config or Helper.read_yml(
+                ".codefox.yml"
+            )
         except FileNotFoundError:
             raise RuntimeError(
                 "Configuration file '.codefox.yml' not found. "
@@ -65,12 +67,12 @@ class BaseAPI(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def upload_files(self, path_files: str) -> tuple:
+    def upload_files(self, path_files: str) -> tuple[bool, Any]:
         pass
 
     @abc.abstractmethod
     def remove_files(self) -> None:
         pass
 
-    def get_tag_models(self) -> list:
+    def get_tag_models(self) -> list[str]:
         return []

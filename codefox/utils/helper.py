@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Any
 
 import git
 import yaml
@@ -21,15 +22,17 @@ class Helper:
     }
 
     @staticmethod
-    def read_yml(path: str) -> dict:
-        path = Path(path)
-        if not path.exists():
-            raise FileNotFoundError(f"Not found file with {path}")
+    def read_yml(path: str) -> dict[str, Any]:
+        path_obj = Path(path)
+        if not path_obj.exists():
+            raise FileNotFoundError(f"Not found file with {path_obj}")
 
-        with open(path, encoding="utf-8") as file:
-            config_data = yaml.safe_load(file)
+        with open(path_obj, encoding="utf-8") as file:
+            config_data: Any = yaml.safe_load(file)
 
-        return config_data
+        if config_data is None:
+            return {}
+        return dict(config_data) if isinstance(config_data, dict) else {}
 
     @staticmethod
     def read_codefoxignore() -> list[str]:
@@ -70,7 +73,7 @@ class Helper:
     def get_diff() -> str | None:
         try:
             repo = git.Repo(".")
-            diff_text = repo.git.diff(repo.head.commit)
+            diff_text: str = repo.git.diff(repo.head.commit)
             return diff_text
         except git.exc.InvalidGitRepositoryError:
             return None
