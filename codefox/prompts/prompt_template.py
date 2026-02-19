@@ -3,7 +3,7 @@ import codefox.prompts.audit_system as audit_system
 from codefox.prompts.template import Template
 
 
-class PromtTemplate(Template):
+class PromptTemplate(Template):
     def __init__(self, config: dict):
         self.config = config
 
@@ -16,9 +16,7 @@ class PromtTemplate(Template):
         parts: list[str] = []
 
         if prompt_cfg.get("system"):
-            parts.append(
-                prompt_cfg["system"]
-            )
+            parts.append(prompt_cfg["system"])
         else:
             parts.append(audit_system.SYSTEM_ROLE)
 
@@ -28,9 +26,7 @@ class PromtTemplate(Template):
                 parts.append(audit_system.SYSTEM_CORE_PRIORITIES)
 
             if ruler.get("performance", True):
-                parts.append(
-                    audit_system.SYSTEM_REGRESSION_AND_IMPACT_ANALYSIS
-                )
+                parts.append(audit_system.SYSTEM_REGRESSION_AND_IMPACT_ANALYSIS)
 
             if ruler.get("style", True):
                 parts.append(audit_system.SYSTEM_SIGNAL_VS_NOISE_RULE)
@@ -41,40 +37,32 @@ class PromtTemplate(Template):
                 parts.append(audit_system.SYSTEM_DIFF_AWARE_RULES)
 
             parts.append(audit_system.SYSTEM_SEVERITY_MODEL)
-            parts.append(
-                audit_system.SYSTEM_CONTEXT_SUFFICIENCY_POLICY
-            )
+            parts.append(audit_system.SYSTEM_CONTEXT_SUFFICIENCY_POLICY)
 
             parts.append(audit_system.SYSTEM_STRICT_FORMATTING_RULES)
-            parts.append(audit_system.SYSTEM_RESPONSEE_STRUCTURE)
+            parts.append(audit_system.SYSTEM_RESPONSE_STRUCTURE)
             parts.append(audit_system.SYSTEM_IF_NO_ISSUES_FOUND)
 
         if baseline.get("enable"):
             parts.append(audit_system.SYSTEM_BASELINE_MODE)
 
-        parts.append(
-            f"""
+        parts.append(f"""
 ──────── REVIEW POLICY ────────
 Minimum severity: {review.get("severity")}
 Max findings: {review.get("max_issues")}
 Auto-fix: {review.get("suggest_fixes")}
 Diff-only mode: {review.get("diff_only")}
-"""
-        )
+""")
 
         if review.get("severity"):
-            parts.append(
-                f"""
+            parts.append(f"""
 Report only issues with severity >= {review.get("severity").upper()}
-"""
-            )
+""")
 
         if review.get("max_issues"):
-            parts.append(
-                f"""
+            parts.append(f"""
 Limit the output to the {review.get("max_issues")} most critical findings.
-"""
-            )
+""")
 
         if prompt_cfg.get("extra"):
             parts.append(prompt_cfg["extra"])
@@ -83,7 +71,5 @@ Limit the output to the {review.get("max_issues")} most critical findings.
 
     def _get_config(self, key: str) -> dict | object:
         if key not in self.config:
-            raise ValueError(
-                f"Missing required config field: '{key}'"
-            )
+            raise ValueError(f"Missing required config field: '{key}'")
         return self.config[key]

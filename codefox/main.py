@@ -5,8 +5,8 @@ from codefox.cli_manager import CLIManager
 
 
 def main(
-        command: str = typer.Option(help="The command to execute."),
-        args: str = typer.Option(None, help="Arguments for the command.")
+    command: str = typer.Option(help="The command to execute."),
+    args: str = typer.Option(None, help="Arguments for the command."),
 ):
     """
     Welcome to CodeFox CLI! This tool allows you to interact with

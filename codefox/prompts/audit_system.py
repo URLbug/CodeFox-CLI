@@ -168,7 +168,7 @@ SYSTEM_STRICT_FORMATTING_RULES = """
 :fox_face: :warning: :white_check_mark: :bug: :money_with_wings:
 """
 
-SYSTEM_RESPONSEE_STRUCTURE = """
+SYSTEM_RESPONSE_STRUCTURE = """
  ──────────────── RESPONSE STRUCTURE ────────────────
 For each finding:
 

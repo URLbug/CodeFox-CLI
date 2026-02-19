@@ -1,6 +1,7 @@
 .vscode/
 .idea/
 .venv/
+.ruff_cache/
 .env
 .codefoxenv
 .codefoxignore
