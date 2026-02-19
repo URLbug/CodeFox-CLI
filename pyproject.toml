@@ -1,0 +1,21 @@
+[project]
+name = "codefox"
+version = "0.2.0"
+description = "CodeFox CLI - code auditing and code review tool"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "gitpython==3.1.46",
+    "google-genai==1.63.0",
+    "python-dotenv==1.2.1",
+    "pyyaml==6.0.3",
+    "rich==14.3.2",
+    "typer==0.23.1",
+]
+
+[project.scripts]
+codefox = "codefox.main:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

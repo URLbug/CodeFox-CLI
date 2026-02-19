@@ -1,63 +1,168 @@
-import os
+import yaml
 
-from dotenv import load_dotenv
-from rich import print
+from pathlib import Path
+
+from dotenv import load_dotenv, set_key
+
 from rich.prompt import Confirm
+from rich import print
 
-from codefox.api.gemini import Gemini
+from codefox.api.base_api import BaseAPI
 
 
 class Init:
-    def __init__(self):
-        pass
+    def __init__(self, model: BaseAPI):
+        self.model = model
+        self.config_path = Path('.codefoxenv')
+        self.ignore_path = Path('.codefoxignore')
+        self.yaml_config_path = Path('.codefox.yml')
 
-    def execute(self):
-        api_key = input('Enter your Gemini API Key: ').strip()
-        if len(api_key) < 30:
-             print('[red]Invalid API key format. Please check your Gemini API Key.[/red]')
-             return
+    def execute(self) -> None:
+        api_key = self._ask_api_key()
+        if not api_key:
+            return
 
-        self.setup_config(api_key)
-        
-        print('[yellow]Check connection to Gemini API...[/yellow]')
-        gemini = Gemini()
-        if not gemini.check_connection():
-            print('[red]Failed to connect to Gemini API. Please check your API key and network connection.[/red]')
+        if not self._write_config(api_key):
+            return
+
+        self._ensure_ignore_file()
+        self._ensure_yaml_config()
+        self._ensure_gitignore()
+
+        if not self._check_connection():
             return
 
         print('[green]CodeFox CLI initialized successfully![/green]')
-    
-    def setup_config(self, api_key):
-        path_env = os.path.join(os.path.dirname(__file__), '..', '.env')
-        
-        should_write_env = True
-        if os.path.exists(path_env):
-            should_write_env = Confirm.ask("[yellow].env file already exists. Overwrite API key?[/yellow]")
 
-        if should_write_env:
-            try:
-                print('[yellow]Saving API key to .env file...[/yellow]')
-                with open(path_env, 'w', encoding='utf-8') as env_file:
-                    env_file.write(f'GEMINI_API_KEY={api_key}\n')
-                print('[green]API key saved successfully![/green]')
-            except Exception as e:
-                print(f'[red]Error writing API key to .env file: {e}[/red]')
-        else:
-            print('[blue]Skipping .env update.[/blue]')
+    def _ask_api_key(self) -> str | None:
+        api_key = input('Enter your model API Key (Gemini): ').strip()
 
-        path_ignore = '.codefoxignore'
-        if not os.path.exists(path_ignore):
-            try:
-                print('[yellow]Creating .codefoxignore file...[/yellow]')
-                default_ignore = "node_modules/\nvendor/\n.git/\n__pycache__/\n.env\n"
-                with open(path_ignore, 'w', encoding='utf-8') as ignore_file:
-                    ignore_file.write(default_ignore)
-            except Exception as e:
-                print(f'[red]Error creating .codefoxignore file: {e}[/red]')
-        else:
-            print('[blue].codefoxignore already exists, skipping...[/blue]')
-        
-        if not load_dotenv(path_env):
-            print('[red]Failed to load .env file. Please ensure it exists and is properly formatted.[/red]')
+        if not self._is_valid_key(api_key):
+            print('[red]Invalid API key format.[/red]')
+            return None
+
+        return api_key
+
+    def _is_valid_key(self, key: str) -> bool:
+        return len(key) >= 30
+
+    def _ensure_yaml_config(self) -> None:
+        if self.yaml_config_path.exists():
+            overwrite = Confirm.ask(
+                '[yellow].codefox.yml already exists. Overwrite?[/yellow]',
+                default=False,
+            )
+            if not overwrite:
+                print('[blue]Skipping .codefox.yml creation.[/blue]')
+                return
+
+        try:
+            print('[yellow]Creating .codefox.yml...[/yellow]')
+
+            default_config = {
+                "model": {
+                    "name": "gemini-3-flash-preview",
+                    "temperature": 0.2,
+                    "max_tokens": 4000,
+                },
+                "review": {
+                    "severity": "high",
+                    "max_issues": None,
+                    "suggest_fixes": True,
+                    "diff_only": False,
+                },
+                "baseline": {
+                    "enable": True,
+                },
+                "ruler": {
+                    "security": True,
+                    "performance": True,
+                    "style": True,
+                },
+                "prompt": {
+                    "system": None,
+                    "extra": None,
+                }
+            }
+
+            with self.yaml_config_path.open("w", encoding="utf-8") as f:
+                yaml.safe_dump(default_config, f, sort_keys=False)
+
+            print('[green].codefox.yml created successfully![/green]')
+
+        except Exception as e:
+            print(f'[red]Error creating .codefox.yml: {e}[/red]')
+
+    def _write_config(self, api_key: str) -> bool:
+        if self.config_path.exists():
+            overwrite = Confirm.ask(
+                (
+                    '[yellow].codefoxenv already exists. Overwrite'
+                    '.codefoxenv?[/yellow]'
+                )
+            )
+            if not overwrite:
+                print('[blue]Skipping .codefoxenv update.[/blue]')
+                return True
+
+        try:
+            print('[yellow]Saving API key to .codefoxenv...[/yellow]')
+
+            self.config_path.touch(exist_ok=True)
+            set_key(str(self.config_path), "CODEFOX_API_KEY", api_key)
+
+            if not load_dotenv(self.config_path):
+                print('[red].codefoxenv is not load[/red]')
+                return False
+
+            print('[green]API key saved successfully![/green]')
+            return True
+        except Exception as e:
+            print(f"[red]Error writing .env: {e}[/red]")
+            return False
+
+    def _ensure_ignore_file(self) -> None:
+        if self.ignore_path.exists():
+            print("[blue].codefoxignore already exists, skipping...[/blue]")
             return
-        
+
+        try:
+            print("[yellow]Creating .codefoxignore...[/yellow]")
+
+            default = "\n".join(
+                [
+                    "node_modules/",
+                    "vendor/",
+                    ".git/",
+                    "__pycache__/",
+                    ".env",
+                ]
+            )
+
+            self.ignore_path.write_text(default + "\n", encoding="utf-8")
+        except Exception as e:
+            print(f"[red]Error creating .codefoxignore: {e}[/red]")
+
+    def _ensure_gitignore(self) -> None:
+        gitignore = Path('.gitignore')
+        entry = ".codefoxenv"
+        if gitignore.exists():
+            content = gitignore.read_text()
+            if entry not in content:
+                with gitignore.open("a") as f:
+                    f.write(f"\n{entry}\n")
+        else:
+            gitignore.write_text(f"{entry}\n")
+
+    def _check_connection(self) -> bool:
+        print('[yellow]Checking model connection...[/yellow]')
+
+        model = self.model()
+        if not model.check_connection():
+            print(
+                '[red]Failed to connect to model API. '
+                'Check API key and network.[/red]'
+            )
+            return False
+
+        return True

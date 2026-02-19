@@ -1,7 +1,10 @@
 .vscode/
 .idea/
+.venv/
 .env
+.codefoxenv
 .codefoxignore
+.codefox.yml
 
 venv/
 __pycache__/
