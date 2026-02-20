@@ -80,10 +80,10 @@ class Qwen(BaseAPI):
         pass
 
     def upload_files(self, path_files: str) -> tuple[bool, Any]:
-        ignored_paths = Helper.read_codefoxignore()
-
-        if self.config.get("diff_only", False):
+        if self.review_config["diff_only"]:
             return True, None
+
+        ignored_paths = Helper.read_codefoxignore()
 
         valid_files = [
             f
@@ -136,10 +136,13 @@ class Qwen(BaseAPI):
         if not clean_texts:
             return []
 
-        resp = self.client.embeddings.create(
-            model="text-embedding-3-small",
-            input=clean_texts,
-        )
+        try:
+            resp = self.client.embeddings.create(
+                model="text-embedding-3-small",
+                input=clean_texts,
+            )
+        except ValueError:
+            return []
 
         if not resp.data:
             return []

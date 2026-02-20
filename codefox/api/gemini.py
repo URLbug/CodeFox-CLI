@@ -53,6 +53,10 @@ class Gemini(BaseAPI):
     def upload_files(
         self, path_files: str
     ) -> tuple[bool, str | types.FileSearchStore | None]:
+        if self.review_config["diff_only"]:
+            self.store = None
+            return True, None
+
         ignored_paths = Helper.read_codefoxignore()
 
         try:
@@ -61,10 +65,6 @@ class Gemini(BaseAPI):
             )
         except Exception as e:
             return False, f"Error creating file search store: {e}"
-
-        if self.config.get("diff_only", False):
-            self.store = store
-            return True, None
 
         valid_files = [
             f
@@ -136,15 +136,22 @@ class Gemini(BaseAPI):
             print("No file search store to remove")
 
     def execute(self, diff_text: str) -> ExecuteResponse:
-        if self.store is None:
-            raise RuntimeError(
-                "File store not initialized; run upload_files first"
-            )
         system_prompt = PromptTemplate(self.config)
         content = (
             "Analyze the following git diff"
             f"and identify potential risks:\n\n{diff_text}"
         )
+
+        tool = []
+        if self.store is not None:
+            tool.append(
+                types.Tool(
+                    file_search=types.FileSearch(
+                        file_search_store_names=[self.store.name]
+                    )
+                )
+            )
+
         response = self.client.models.generate_content(
             model=self.model_config["name"],
             contents=content,
@@ -152,13 +159,7 @@ class Gemini(BaseAPI):
                 system_instruction=system_prompt.get(),
                 temperature=self.model_config["temperature"],
                 max_output_tokens=self.model_config["max_tokens"],
-                tools=[
-                    types.Tool(
-                        file_search=types.FileSearch(
-                            file_search_store_names=[self.store.name or ""]
-                        )
-                    )
-                ],
+                tools=tool,
             ),
         )
         return Response(text=response.text or "")

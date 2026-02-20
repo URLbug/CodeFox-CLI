@@ -30,35 +30,10 @@ class BaseAPI(abc.ABC):
         if "model" not in self.config or not self.config.get("model"):
             raise ValueError("Missing required key 'model'")
 
-        self.model_config: dict[str, Any] = self.config["model"]
-        if "name" not in self.model_config or not self.model_config.get(
-            "name"
-        ):
-            raise ValueError("Key 'model' missing required value key 'name'")
-
-        if not self.model_config["name"].strip():
-            raise ValueError("Model name cannot be empty")
-
-        if "max_tokens" not in self.model_config or not self.model_config.get(
-            "max_tokens"
-        ):
-            self.model_config["max_tokens"] = None
-
-        if (
-            "max_completion_tokens" not in self.model_config
-            or not self.model_config.get("max_completion_tokens")
-        ):
-            self.model_config["max_completion_tokens"] = None
-
-        if "temperature" not in self.model_config or not self.model_config.get(
-            "temperature"
-        ):
-            self.model_config["temperature"] = 0.2
-
-        if "timeout" not in self.model_config or not self.model_config.get(
-            "timeout"
-        ):
-            self.model_config["timeout"] = 600
+        self.model_config = self._processing_model_config(self.config["model"])
+        self.review_config = self._processing_review_config(
+            self.config["review"]
+        )
 
     @abc.abstractmethod
     def check_model(self, name: str) -> bool:
@@ -82,3 +57,46 @@ class BaseAPI(abc.ABC):
 
     def get_tag_models(self) -> list[str]:
         return []
+
+    def _processing_review_config(
+        self, review_config: dict[str, Any]
+    ) -> dict[str, Any]:
+        if "max_issues" not in review_config:
+            review_config["max_issues"] = None
+
+        if "suggest_fixes" not in review_config:
+            review_config["suggest_fixes"] = True
+
+        if "diff_only" not in review_config:
+            review_config["diff_only"] = False
+
+        return review_config
+
+    def _processing_model_config(
+        self, model_config: dict[str, Any]
+    ) -> dict[str, Any]:
+        if "name" not in model_config or not model_config.get("name"):
+            raise ValueError("Key 'model' missing required value key 'name'")
+
+        if not model_config["name"].strip():
+            raise ValueError("Model name cannot be empty")
+
+        if "max_tokens" not in model_config or not model_config.get(
+            "max_tokens"
+        ):
+            model_config["max_tokens"] = None
+
+        if "max_completion_tokens" not in model_config or not model_config.get(
+            "max_completion_tokens"
+        ):
+            model_config["max_completion_tokens"] = None
+
+        if "temperature" not in model_config or not model_config.get(
+            "temperature"
+        ):
+            model_config["temperature"] = 0.2
+
+        if "timeout" not in model_config or not model_config.get("timeout"):
+            model_config["timeout"] = 600
+
+        return model_config
