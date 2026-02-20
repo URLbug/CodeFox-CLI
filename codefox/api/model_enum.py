@@ -3,12 +3,14 @@ from typing import cast
 
 from codefox.api.base_api import BaseAPI
 from codefox.api.gemini import Gemini
+from codefox.api.ollama import Ollama
 from codefox.api.qwen import Qwen
 
 
 class ModelEnum(enum.Enum):
     GEMINI = Gemini
     QWEN = Qwen
+    OLLAMA = Ollama
 
     @property
     def api_class(self) -> type[BaseAPI]:

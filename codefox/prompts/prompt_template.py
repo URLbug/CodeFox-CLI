@@ -14,17 +14,28 @@ class PromptTemplate(Template):
         prompt_cfg = self._get_config("prompt")
         baseline = self._get_config("baseline")
 
+        hard_mode = prompt_cfg.get("hard_mode", False)
+        short_mode = prompt_cfg.get("short_mode", False)
+
         parts: list[str] = []
 
         if prompt_cfg.get("system"):
             parts.append(prompt_cfg["system"])
-        else:
-            parts.append(audit_system.SYSTEM_ROLE)
 
+        else:
+            if hard_mode:
+                parts.append(audit_system.SYSTEM_HARD_MODE)
+                parts.append(audit_system.SYSTEM_ANTI_HALLUCINATION)
+
+            parts.append(audit_system.SYSTEM_ROLE)
             parts.append(audit_system.SYSTEM_ANALYSIS_PROTOCOL)
 
             if ruler.get("security", True):
                 parts.append(audit_system.SYSTEM_CORE_PRIORITIES)
+
+            if hard_mode:
+                parts.append(audit_system.SYSTEM_BUSINESS_LOGIC_EXECUTION)
+                parts.append(audit_system.SYSTEM_REGRESSION_PROOF)
 
             if ruler.get("performance", True):
                 parts.append(
@@ -39,13 +50,24 @@ class PromptTemplate(Template):
             if review.get("diff_only", True):
                 parts.append(audit_system.SYSTEM_DIFF_AWARE_RULES)
 
+                if hard_mode:
+                    parts.append(audit_system.SYSTEM_DIFF_SIMPLIFIED)
+
             parts.append(audit_system.SYSTEM_SEVERITY_MODEL)
             parts.append(audit_system.SYSTEM_NO_FAKE_STATISTICS)
             parts.append(audit_system.SYSTEM_CONTEXT_SUFFICIENCY_POLICY)
 
+            if hard_mode:
+                parts.append(audit_system.SYSTEM_CONCRETE_LANGUAGE)
+                parts.append(audit_system.SYSTEM_OUTPUT_GUARD)
+                parts.append(audit_system.SYSTEM_SELF_CHECK)
+
             parts.append(audit_system.SYSTEM_STRICT_FORMATTING_RULES)
             parts.append(audit_system.SYSTEM_RESPONSE_STRUCTURE)
             parts.append(audit_system.SYSTEM_IF_NO_ISSUES_FOUND)
+
+            if short_mode:
+                parts.append(audit_system.SYSTEM_SHORT_MODE)
 
         if baseline.get("enable"):
             parts.append(audit_system.SYSTEM_BASELINE_MODE)

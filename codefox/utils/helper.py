@@ -51,7 +51,7 @@ class Helper:
         return ignored_paths
 
     @staticmethod
-    def get_all_files(path_files: str) -> list:
+    def get_all_files(path_files: str) -> list[str]:
         ignored_paths = Helper.read_codefoxignore()
 
         all_files_to_upload = []

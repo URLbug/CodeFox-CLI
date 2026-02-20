@@ -12,6 +12,7 @@ from codefox.utils.helper import Helper
 
 class Qwen(BaseAPI):
     default_model_name = "qwen/qwen3-vl-30b-a3b-thinking"
+    default_embedding = "text-embedding-3-small"
     base_url = "https://openrouter.ai/api/v1"
 
     def __init__(self, config: dict[str, Any] | None = None) -> None:
@@ -21,6 +22,11 @@ class Qwen(BaseAPI):
             "base_url"
         ):
             self.base_url = self.model_config["base_url"]
+
+        if "embedding" not in self.model_config or not self.model_config.get(
+            "embedding"
+        ):
+            self.model_config["embedding"] = self.default_embedding
 
         if "qwen" not in self.model_config["name"]:
             raise ValueError("This API key is not compatible with Qwen models")
@@ -138,7 +144,7 @@ class Qwen(BaseAPI):
 
         try:
             resp = self.client.embeddings.create(
-                model="text-embedding-3-small",
+                model=self.model_config["embedding"],
                 input=clean_texts,
             )
         except ValueError:
