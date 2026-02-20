@@ -1,5 +1,6 @@
 import os
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
@@ -142,9 +143,9 @@ class Gemini(BaseAPI):
             f"and identify potential risks:\n\n{diff_text}"
         )
 
-        tool = []
-        if self.store is not None:
-            tool.append(
+        tools: list[types.Tool | Callable[..., Any] | Any | Any] = []
+        if self.store is not None and self.store.name is not None:
+            tools.append(
                 types.Tool(
                     file_search=types.FileSearch(
                         file_search_store_names=[self.store.name]
@@ -159,7 +160,7 @@ class Gemini(BaseAPI):
                 system_instruction=system_prompt.get(),
                 temperature=self.model_config["temperature"],
                 max_output_tokens=self.model_config["max_tokens"],
-                tools=tool,
+                tools=tools,
             ),
         )
         return Response(text=response.text or "")
