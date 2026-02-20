@@ -1,5 +1,5 @@
-import os
 import math
+import os
 from typing import Any
 
 from openai import OpenAI
@@ -100,11 +100,11 @@ class Qwen(BaseAPI):
                 files.append({"path": file, "content": content})
             except Exception:
                 continue
-        
+
         self.index = []
         for file in track(files, description="Progress files processing..."):
             chunks = self._chunk_text(file["content"])
-            
+
             if not chunks:
                 continue
 
@@ -125,7 +125,7 @@ class Qwen(BaseAPI):
     def get_tag_models(self) -> list:
         models = self.client.models.list()
         return [model.id for model in models]
-    
+
     def _chunk_text(self, text: str, size: int = 800) -> list[str]:
         raw_chunks = [text[i:i+size] for i in range(0, len(text), size)]
         return [c for c in raw_chunks if c.strip()]
@@ -135,7 +135,7 @@ class Qwen(BaseAPI):
 
         if not clean_texts:
             return []
-    
+
         resp = self.client.embeddings.create(
             model="text-embedding-3-small",
             input=clean_texts,
@@ -145,13 +145,13 @@ class Qwen(BaseAPI):
             return []
 
         return [d.embedding for d in resp.data]
-    
+
     def _cosine(self, a, b):
         dot = sum(x*y for x, y in zip(a, b))
         na = math.sqrt(sum(x*x for x in a))
         nb = math.sqrt(sum(x*x for x in b))
         return dot / (na * nb + 1e-8)
-    
+
     def _search(self, query: str, k: int = 5) -> list[dict]:
         query_emb = self._embed([query])[0]
 

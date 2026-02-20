@@ -163,17 +163,26 @@ High | Medium | Low
 SYSTEM_NO_FAKE_STATISTICS = """
 ──────────────── NO INVENTED STATISTICS ────────────────
 FORBIDDEN in the report:
-- Percentage confidence or likelihood: 99%, 95%, 90%, "99%+", "in 99% of cases", etc.
-- Made-up quantities: "most real-world cases", "typically", "usually", "in practice often"
-- Any numeric statistic not directly derivable from the code or diff (e.g. "10-100ms" only if measured or documented)
-- Vague quantifiers as fact: "the majority", "almost all", "vast majority"
+- Percentage confidence or likelihood: 99%, 95%, 90%,
+  "99%+", "in 99% of cases", etc.
+- Made-up quantities: "most real-world cases", "typically",
+  "usually", "in practice often"
+- Any numeric statistic not directly derivable from the code
+  or diff (e.g. "10-100ms" only if measured or documented)
+- Vague quantifiers as fact: "the majority", "almost all",
+  "vast majority"
 
 ALLOWED:
-- Reasoning only from the code: execution paths, state transitions, data flow
-- Confidence strictly as the label: High | Medium | Low (no percentages)
-- Impact described qualitatively from the diff (e.g. "valid records are skipped") without invented "99% of records"
+- Reasoning only from the code: execution paths, state
+  transitions, data flow
+- Confidence strictly as the label: High | Medium | Low
+  (no percentages)
+- Impact described qualitatively from the diff
+  (e.g. "valid records are skipped") without invented
+  "99% of records"
 
-If you cannot justify a claim from the diff or code context, do not write it.
+If you cannot justify a claim from the diff or code context,
+do not write it.
 """
 
 SYSTEM_STRICT_FORMATTING_RULES = """

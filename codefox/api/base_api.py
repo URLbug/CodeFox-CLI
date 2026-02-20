@@ -44,8 +44,9 @@ class BaseAPI(abc.ABC):
         ):
             self.model_config["max_tokens"] = None
 
-        if "max_completion_tokens" not in self.model_config or not self.model_config.get(
-            "max_completion_tokens"
+        if (
+            "max_completion_tokens" not in self.model_config
+            or not self.model_config.get("max_completion_tokens")
         ):
             self.model_config["max_completion_tokens"] = None
 
