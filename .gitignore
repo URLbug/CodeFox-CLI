@@ -1,11 +1,12 @@
 .vscode/
 .idea/
 .venv/
+.*_cache/
 .env
 .codefoxenv
 .codefoxignore
 .codefox.yml
 
-venv/
+venv*/
 __pycache__/
 *.pyc

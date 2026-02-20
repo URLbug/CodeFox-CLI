@@ -1,26 +1,31 @@
 import os
-import git
 
 from rich import print
+from rich.markup import escape
 
-from codefox.api.gemini import Gemini
+from codefox.api.base_api import BaseAPI
+from codefox.utils.helper import Helper
 
 
 class Scan:
-    def __init__(self):
-        self.gemini = Gemini()
+    def __init__(self, model: type[BaseAPI]):
+        self.model = model()
 
     def execute(self):
-        repo = git.Repo('.')
-        t = repo.head.commit.tree
-        diff_text = repo.git.diff(t)
-
-        if not self.gemini.check_connection():
+        diff_text = Helper.get_diff()
+        if not diff_text:
+            print(
+                "[yellow]Repository is not found or not have change[/yellow]"
+            )
             return
 
-        name = self.gemini.model_config["name"]
-        if not self.gemini.check_model(name):
-            available_models = "\n".join(self.gemini.get_tag_models())
+        if not self.model.check_connection():
+            print("[red]Failed to connect to model[/red]")
+            return
+
+        name = self.model.model_config["name"]
+        if not self.model.check_model(name):
+            available_models = "\n".join(self.model.get_tag_models())
 
             print(f"[red]Model '{name}' not found.")
             print(f"Available models:\n{available_models}")
@@ -28,23 +33,26 @@ class Scan:
 
         if not diff_text.strip():
             print(
-                '[yellow]No changes detected in the current commit.'
-                'Scanning entire codebase.[/yellow]'
+                "[yellow]No changes to analyze."
+                "Make changes and run scan again.[/yellow]"
             )
             return
 
-        isUpload, store = self.gemini.upload_files(os.getcwd())
-        if not isUpload:
-            print(f'[red]Failed to upload files to Gemini API: {store}[/red]')
-            return
-
-        print('[yellow]Waiting for Gemini API response...[/yellow]')
-        try:
-            response = self.gemini.execute(store, diff_text)
-            print(f'[green]Scan result from Gemini API:[/green]\n{response.text}')
-        except Exception as e:
+        is_upload, error = self.model.upload_files(os.getcwd())
+        if not is_upload:
             print(
-                f"[red]Failed scan: {e}[/red]"
+                "[red]Failed to upload files to model: "
+                + escape(str(error))
+                + "[/red]"
             )
+            return
 
-        self.gemini.remove_files(store)
+        print("[yellow]Waiting for model response...[/yellow]")
+        try:
+            response = self.model.execute(diff_text)
+            print(f"[green]Scan result from model:[/green]\n{response.text}")
+        except Exception as e:
+            err_str = str(e)
+            print("[red]Failed scan: " + escape(err_str) + "[/red]")
+
+        self.model.remove_files()

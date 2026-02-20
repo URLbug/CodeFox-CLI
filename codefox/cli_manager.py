@@ -3,10 +3,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 from rich import print
 
-from codefox.scan import Scan
+from codefox.api.model_enum import ModelEnum
 from codefox.init import Init
-
-from codefox.api.gemini import Gemini
+from codefox.scan import Scan
+from codefox.utils.helper import Helper
 
 
 class CLIManager:
@@ -14,30 +14,39 @@ class CLIManager:
         self.command = command
         self.args = args
 
-        path_env = Path('.codefoxenv')
-        if not load_dotenv(path_env) and command not in ['init', 'version',]:
-            raise FileExistsError(
-                'Failed to load .env file.'
-                'Please ensure it exists and is properly formatted.'
+        path_env = Path(".codefoxenv")
+        if not load_dotenv(path_env) and command not in [
+            "init",
+            "version",
+        ]:
+            raise FileNotFoundError(
+                "Failed to load .codefoxenv file."
+                "Please ensure it exists and is properly formatted."
             )
+
+    def _get_api_class(self):
+        config = Helper.read_yml(".codefox.yml")
+        provider = config.get("provider", "gemini")
+        return ModelEnum.by_name(provider).api_class
 
     def run(self):
         if self.command == "version":
-            print('[green]CodeFox CLI version Alpha 0.2v[/green]')
+            print("[green]CodeFox CLI version Alpha 0.2v[/green]")
             return
 
         if self.command == "scan":
-            scan = Scan()
+            api_class = self._get_api_class()
+            scan = Scan(api_class)
             scan.execute()
             return
 
         if self.command == "init":
-            init = Init(Gemini)
+            init = Init()
             init.execute()
             return
 
-        print(f'[red]Unknown command: {self.command}[/red]')
+        print(f"[red]Unknown command: {self.command}[/red]")
         print(
             '[yellow]Please use flag "--help"',
-            'to see available commands[/yellow]'
+            "to see available commands[/yellow]",
         )
