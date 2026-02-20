@@ -60,7 +60,7 @@ class Qwen(BaseAPI):
             temperature=self.model_config["temperature"],
             timeout=self.model_config["timeout"],
             max_tokens=self.model_config["max_tokens"],
-            max_completion_tokens=self.model_config['max_completion_tokens'],
+            max_completion_tokens=self.model_config["max_completion_tokens"],
             messages=[
                 {"role": "system", "content": system_prompt.get()},
                 {
@@ -127,7 +127,7 @@ class Qwen(BaseAPI):
         return [model.id for model in models]
 
     def _chunk_text(self, text: str, size: int = 800) -> list[str]:
-        raw_chunks = [text[i:i+size] for i in range(0, len(text), size)]
+        raw_chunks = [text[i : i + size] for i in range(0, len(text), size)]
         return [c for c in raw_chunks if c.strip()]
 
     def _embed(self, texts: list[str]) -> list[list[float]]:
@@ -147,9 +147,9 @@ class Qwen(BaseAPI):
         return [d.embedding for d in resp.data]
 
     def _cosine(self, a, b):
-        dot = sum(x*y for x, y in zip(a, b))
-        na = math.sqrt(sum(x*x for x in a))
-        nb = math.sqrt(sum(x*x for x in b))
+        dot = sum(x * y for x, y in zip(a, b))
+        na = math.sqrt(sum(x * x for x in a))
+        nb = math.sqrt(sum(x * x for x in b))
         return dot / (na * nb + 1e-8)
 
     def _search(self, query: str, k: int = 5) -> list[dict]:
