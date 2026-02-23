@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://github.com/URLbug/CodeFox-CLI/actions"><img src="https://github.com/URLbug/CodeFox-CLI/workflows/CI/badge.svg" alt="CI" /></a>
-  <a href="https://github.com/URLbug/CodeFox-CLI/blob/main/LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a>
+  <a href="https://github.com/URLbug/CodeFox-CLI/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-green.svg" alt="Python 3.11+" /></a>
 </p>
 
