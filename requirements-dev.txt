@@ -1,0 +1,8 @@
+# Install with: pip install -r requirements.txt -r requirements-dev.txt
+# Or: pip install -e ".[dev]"
+-r requirements.txt
+pytest>=8.0
+pytest-cov>=4.0
+mypy>=1.0
+ruff>=0.8
+types-PyYAML>=6.0

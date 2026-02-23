@@ -99,8 +99,9 @@ Stores the API token for the model. This file is used by the CLI for authenticat
 
 | Command   | Description                                                                                          |
 | --------- | ---------------------------------------------------------------------------------------------------- |
-| `init`    | Saves the Gemini API key locally and creates a `.codefoxignore` and `.codefox.yml` file in the current directory.       |
-| `scan`    | Collects changes from the `git diff`, uploads files to the File Store, and sends requests to Gemini. |
+| `init`    | Saves the API key locally and creates a `.codefoxignore` and `.codefox.yml` file in the current directory.       |
+| `list`    | Shows the full list of models available for the current provider (Gemini, Ollama, or OpenRouter) from `.codefox.yml`. |
+| `scan`    | Collects changes from the `git diff`, uploads files to the File Store, and sends requests to the configured model. |
 | `version` | Displays the current CodeFox CLI version.                                                            |
 | `--help`  | Shows available flags and usage information.                                                         |
 
@@ -108,10 +109,52 @@ Stores the API token for the model. This file is used by the CLI for authenticat
 
 ## 🧪 Examples
 
+### List available models (for the provider in `.codefox.yml`)
+
+```bash
+codefox --command list
+```
+
 ### Run a scan in a project
 
 ```bash
 codefox --command scan
+```
+
+---
+
+## 🛠 Development
+
+Install with dev dependencies (includes pytest, mypy, ruff, types-PyYAML):
+
+**pip:**
+```bash
+pip install -e ".[dev]"
+# or: pip install -r requirements.txt -r requirements-dev.txt
+```
+
+**uv:**
+```bash
+uv pip install -e ".[dev]"
+```
+
+Run tests:
+
+```bash
+pytest tests -v
+```
+
+Lint and format:
+
+```bash
+ruff check codefox tests
+ruff format codefox tests
+```
+
+Static type check:
+
+```bash
+mypy codefox
 ```
 
 ---
