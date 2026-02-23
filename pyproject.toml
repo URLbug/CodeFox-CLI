@@ -5,14 +5,17 @@ description = "CodeFox CLI - code auditing and code review tool"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "faiss-cpu>=1.7.4",
+    "fastembed>=0.3.0",
     "gitpython==3.1.46",
     "google-genai==1.63.0",
+    "numpy>=1.24.0",
     "python-dotenv==1.2.1",
     "pyyaml==6.0.3",
     "rich==14.3.2",
     "typer==0.23.1",
     "openai==2.21.0",
-    "ollama==0.6.1"
+    "ollama==0.6.1",
 ]
 
 [project.optional-dependencies]
