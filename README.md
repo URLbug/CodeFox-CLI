@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/URLbug/CodeFox-CLI/blob/main/assets/logo.png" alt="CodeFox logo" width="120" />
+  <img src="https://raw.githubusercontent.com/URLbug/CodeFox-CLI/refs/heads/main/assets/logo.png" alt="CodeFox logo" width="120" />
 </p>
 
 <h1 align="center">CodeFox-CLI</h1>
@@ -28,7 +28,7 @@ Unlike traditional linters, CodeFox understands the context of the entire projec
 | RAG over your codebase for relevant hints | CLI-first: `git diff` → review in seconds |
 
 <p align="center">
-  <img src="https://github.com/URLbug/CodeFox-CLI/blob/main/assets/work_review.gif" alt="CodeFox scan demo" width="800" />
+  <img src="https://raw.githubusercontent.com/URLbug/CodeFox-CLI/refs/heads/main/assets/work_review.gif" alt="CodeFox scan demo" width="800" />
 </p>
 
 ---
