@@ -11,7 +11,14 @@
   <a href="https://github.com/URLbug/CodeFox-CLI/actions"><img src="https://github.com/URLbug/CodeFox-CLI/workflows/CI/badge.svg" alt="CI" /></a>
   <a href="https://github.com/URLbug/CodeFox-CLI/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-green.svg" alt="Python 3.11+" /></a>
+  <a href="https://github.com/URLbug/CodeFox-CLI/blob/main/WIKI.md"><img src="https://img.shields.io/badge/docs-WIKI-blue?logo=readme" alt="Wiki" /></a>
 </p>
+
+---
+
+## 📚 Documentation
+
+**Full configuration reference and examples:** [**WIKI.md**](https://github.com/URLbug/CodeFox-CLI/blob/main/WIKI.md) - provider settings, model options, review rules, prompts, and more.
 
 ---
 
@@ -105,7 +112,7 @@ Specifies paths that should not be uploaded to the File Store.
 
 **Model settings:** `./.codefox.yml`
 Used for fine-grained configuration of the analysis behavior and model parameters (such as model selection, temperature, review rules, baseline, and prompts).
-For detailed configuration options and examples, see [wiki](WIKI.md).
+For detailed configuration options and examples, see [**WIKI.md**](WIKI.md).
 
 Example config used in the demo above (Ollama + qwen3-coder):
 
