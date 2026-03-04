@@ -15,12 +15,15 @@ def main(
     """CodeFox CLI — automated code review with Gemini, Ollama, and OpenRouter.
 
     Commands:
-    
-    - [bold cyan]init[/bold cyan]: Set up the environment (provider, API key, .codefoxignore, .codefox.yml).
 
-    - [bold cyan]scan[/bold cyan]: Run review on the current git diff using the configured model.
+    - [bold cyan]init[/bold cyan]:
+    Set up the environment (provider, API key, .codefoxignore, .codefox.yml).
 
-    - [bold cyan]list[/bold cyan]: List available models for the current provider.
+    - [bold cyan]scan[/bold cyan]:
+    Run review on the current git diff using the configured model.
+
+    - [bold cyan]list[/bold cyan]:
+    List available models for the current provider.
 
     - [bold cyan]version[/bold cyan]: Show CodeFox CLI version.
     """
