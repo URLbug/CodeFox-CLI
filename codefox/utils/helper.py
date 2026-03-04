@@ -3,7 +3,7 @@ import re
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
-from tree_sitter_languages import get_parser
+from tree_sitter_language_pack import get_parser
 from nltk.tokenize import sent_tokenize
 
 import git

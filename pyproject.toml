@@ -19,7 +19,7 @@ dependencies = [
     "requests>=2.28.0",
     "rich==14.3.2",
     "typer==0.23.1",
-    "tree-sitter-languages>=1.10.0",
+    "tree-sitter-language-pack==0.13.0",
 ]
 
 [project.optional-dependencies]
