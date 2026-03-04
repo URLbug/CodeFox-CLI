@@ -1,3 +1,4 @@
+import importlib.metadata
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -32,7 +33,8 @@ class CLIManager:
 
     def run(self):
         if self.command == "version":
-            print("[green]CodeFox CLI version Alpha 0.3v[/green]")
+            version = importlib.metadata.version("codefox")
+            print(f"[green]CodeFox CLI version {version}[/green]")
             return
 
         if self.command == "list":

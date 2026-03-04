@@ -7,7 +7,7 @@ README = (HERE / "README.txt").read_text(encoding="utf-8") if (HERE / "README.tx
 
 setup(
 	name="codefox",
-	version="0.3.2",
+	version="0.3.5",
 	description="CodeFox CLI - code auditing and code review tool",
 	long_description=README,
 	long_description_content_type="text/plain",
