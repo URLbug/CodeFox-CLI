@@ -5,6 +5,7 @@ from rich.console import Console
 from rich.errors import MarkupError
 from rich.markdown import Markdown
 from rich.markup import escape
+from rich.table import Table
 
 from codefox.api.base_api import BaseAPI
 from codefox.utils.helper import Helper
@@ -29,10 +30,23 @@ class Scan:
 
         name = self.model.model_config["name"]
         if not self.model.check_model(name):
-            available_models = "\n".join(self.model.get_tag_models())
+            models = self.model.get_tag_models()
 
             print(f"[red]Model '{name}' not found.")
-            print(f"Available models:\n{available_models}")
+
+            if not models:
+                print("[yellow]No models available[/yellow]")
+                return
+
+            table = Table()
+
+            table.add_column("#", style="dim", width=4, justify="right")
+            table.add_column("Model name", style="cyan")
+
+            for i, model_name in enumerate(models, start=1):
+                table.add_row(str(i), model_name)
+
+            print(table)
             return
 
         if not diff_text.strip():

@@ -111,7 +111,7 @@ Example config used in the demo above (Ollama + qwen3-coder):
 ```yaml
 provider: ollama
 model:
-  name: qwen3-coder:480b
+  name: qwen3-coder:30b
   temperature: 0.5
   max_tokens: 4000
 review:

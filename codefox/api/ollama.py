@@ -2,7 +2,18 @@ import os
 from typing import Any
 
 import requests
-from ollama import ChatResponse, Client
+from ollama import ChatResponse, Client, pull
+from rich import print
+from rich.progress import (
+    BarColumn,
+    DownloadColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+)
+from rich.prompt import Confirm
 
 from codefox.api.base_api import BaseAPI, ExecuteResponse, Response
 from codefox.prompts.prompt_template import PromptTemplate
@@ -13,7 +24,7 @@ from codefox.utils.local_rag import LocalRAG
 class Ollama(BaseAPI):
     default_model_name = "gemma3:12b"
     default_embedding = "BAAI/bge-small-en-v1.5"
-    base_url = "https://ollama.com"
+    base_url = "http://localhost:11434"
     default_max_rag_chars = 4096
     default_max_diff_chars = 16_000
 
@@ -45,7 +56,10 @@ class Ollama(BaseAPI):
         )
 
     def check_model(self, name: str) -> bool:
-        return name in self.get_tag_models()
+        if name not in self.get_tag_models():
+            return self._pull_model(name)
+
+        return True
 
     def check_connection(self) -> tuple[bool, Any]:
         try:
@@ -149,3 +163,46 @@ class Ollama(BaseAPI):
             ]
         else:
             return []
+
+    def _pull_model(self, model: str) -> bool:
+        if Confirm.ask(
+            "[yellow]Do you wanna download model?[/yellow]", default=True
+        ):
+            try:
+                print(f"Starting download for model: {model}")
+
+                with Progress(
+                    SpinnerColumn(),
+                    TextColumn("[bold blue]{task.description}"),
+                    BarColumn(),
+                    DownloadColumn(),
+                    TransferSpeedColumn(),
+                    TimeRemainingColumn(),
+                ) as progress:
+                    task = progress.add_task(
+                        f"Downloading {model}", total=None
+                    )
+
+                    for event in pull(model, stream=True):
+                        completed = event.get("completed")
+                        total = event.get("total")
+                        status = event.get("status")
+
+                        if total:
+                            progress.update(task, total=total)
+
+                        if completed:
+                            progress.update(task, completed=completed)
+
+                        if status:
+                            progress.update(
+                                task, description=f"[cyan]{status}"
+                            )
+
+                print(f"[green]Model {model} downloaded successfully.[/green]")
+                return True
+            except Exception as e:
+                print(f"[red]Sorry but we cannot download model: {e}[/red]")
+                return False
+
+        return False
