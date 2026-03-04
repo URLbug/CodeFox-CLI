@@ -117,7 +117,6 @@ class Gemini(BaseAPI):
             {"files_context": rag_context, "diff_text": diff_text}, "content"
         )
         content = context_prompt.get()
-        print(content)
 
         response = self.client.models.generate_content(
             model=self.model_config["name"],
