@@ -28,9 +28,7 @@ class Init(BaseCLI):
         return ModelEnum.by_name(choice)
 
     def execute(self) -> None:
-        api_key = self._ask_api_key()
-        if not api_key:
-            return
+        api_key = self._ask_api_key() or ""
 
         if not self._write_config(api_key):
             return
@@ -45,8 +43,15 @@ class Init(BaseCLI):
         print("[green]CodeFox CLI initialized successfully![/green]")
 
     def _ask_api_key(self) -> str | None:
-        api_key = input(
-            f"Enter your API Key for {self.model_enum.name}: "
+        if not Confirm.ask(
+            f"[yellow]Enter API key for {self.model_enum.name}?[/yellow]",
+            default=True,
+        ):
+            return None
+
+        api_key = Prompt.ask(
+            f"[yellow]API Key for {self.model_enum.name}[/yellow]",
+            default="",
         ).strip()
 
         if not self._is_valid_key(api_key):
@@ -181,11 +186,18 @@ class Init(BaseCLI):
     def _check_connection(self) -> bool:
         print("[yellow]Checking model connection...[/yellow]")
 
-        model = self.api_class()
-        if not model.check_connection():
+        try:
+            model = self.api_class()
+            if not model.check_connection():
+                print(
+                    "[red]Failed to connect to model API. "
+                    "Check API key and network.[/red]"
+                )
+                return False
+        except Exception as e:
             print(
                 "[red]Failed to connect to model API. "
-                "Check API key and network.[/red]"
+                f"Check API key and network: {e}[/red]"
             )
             return False
 
