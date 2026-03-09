@@ -143,7 +143,7 @@ class Ollama(BaseAPI):
             return Helper.get_files_context(
                 self.rag, 
                 query, 
-                k=18, 
+                k=18,
                 max_rag_chars=max_rag_chars
             )
 
@@ -162,8 +162,6 @@ class Ollama(BaseAPI):
             {"role": "user", "content": context_prompt.get()},
         ]
 
-        print(messages)
-
         chat_response: ChatResponse = self.client.chat(
             model=self.model_config["name"],
             messages=messages,
@@ -178,9 +176,7 @@ class Ollama(BaseAPI):
                                                                                                                                                             
         while chat_response.message.tool_calls and tool_iteration < max_tool_iterations:                                                                      
             tool_iteration += 1                                                                                                                               
-            print(chat_response.message.thinking)                                                                                                             
-            print(chat_response.message.tool_calls)                                                                                                           
-                                                                                                                                                            
+                                                                                                                                            
             for call in chat_response.message.tool_calls:                                                                                                     
                 if call.function.name == 'search_knowledge_base':
                     args = call.function.arguments                                                                                     
@@ -190,11 +186,7 @@ class Ollama(BaseAPI):
                         result = search_knowledge_base(args['query'])                                                                              
                 else:                                                                                                                                         
                     result = 'Unknown tool'                                                                                                                   
-                                                                                                                                                            
-                print(call.function.name)                                                                                                                     
-                print(call.function.arguments)                                                                                                                
-                print(result)                                                                                                                                 
-                                                                                                                                                            
+                                                                                                                                                                                                                                                                                                          
                 messages.append({                                                                                                                                     
                     'role': 'tool',                                                                                                                                   
                     'name': call.function.name,                                                                                                                       

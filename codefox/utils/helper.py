@@ -92,10 +92,13 @@ class Helper:
         try:
             repo = git.Repo(".")
 
-            if not source_branch:
-                source_branch = repo.head.commit
+            if source_branch and target_branch:
+                diff_text = repo.git.diff(
+                    f"origin/{target_branch}...origin/{source_branch}"
+                )
+            else:
+                diff_text = repo.git.diff()
 
-            diff_text: str = repo.git.diff(source_branch, target_branch)
             return diff_text
         except git.exc.InvalidGitRepositoryError:
             return None
