@@ -16,7 +16,7 @@ def scan(
         command="scan",
         args={
             "sourceBranch": sourceBranch,
-            "targetBranch": targetBranch
+            "targetBranch": targetBranch,
         }
     )
     manager.run()
@@ -27,9 +27,30 @@ def init():
     CLIManager(command="init", args={}).run()
 
 @app.command()
-def list():
+def list(
+    typeModel: str = typer.Option("models", help="Model type")
+):
     """List available models."""
-    CLIManager(command="list", args={}).run()
+    manager = CLIManager(
+        command="list",
+        args={
+            "typeModel": typeModel,
+        }
+    )
+    manager.run()
+
+@app.command()
+def clean(
+    typeCache: str = typer.Option("rag", help="Cache type")
+):
+    """Clean cache"""
+    manager = CLIManager(
+        command="clean",
+        args={
+            "typeCache": typeCache,
+        }
+    )
+    manager.run()
 
 @app.command()
 def version():

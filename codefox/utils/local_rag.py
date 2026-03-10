@@ -61,12 +61,6 @@ class LocalRAG:
         self.files_path = files_path
         self.collection_name = self.default_collection_name
 
-    def _index_dir(self) -> Path:
-        return Path(self.kwargs.get("index_dir", self.default_index_dir))
-
-    def _qdrant_path(self) -> Path:
-        return self._index_dir() / "qdrant"
-
     def load_index(self) -> bool:
         idx_dir = self._index_dir()
         meta_path = idx_dir / "meta.json"
@@ -400,3 +394,14 @@ class LocalRAG:
             raise TypeError("Parameter 'min_score' must be a number or None.")
 
         return kwargs
+
+    def _index_dir(self) -> Path:
+        return Path(self.kwargs.get("index_dir", self.default_index_dir))
+
+    def _qdrant_path(self) -> Path:
+        return self._index_dir() / "qdrant"
+
+    @classmethod
+    def get_model_tag(cls) -> list[str]:
+        models = TextEmbedding.list_supported_models()
+        return list(map(lambda data: data["model"], models))

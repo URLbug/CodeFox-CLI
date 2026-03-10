@@ -9,6 +9,7 @@ from codefox.api.model_enum import ModelEnum
 from codefox.init import Init
 from codefox.list import List
 from codefox.scan import Scan
+from codefox.clean import Clean
 from codefox.api.base_api import BaseAPI
 from codefox.utils.helper import Helper
 
@@ -28,11 +29,6 @@ class CLIManager:
                 "Please ensure it exists and is properly formatted."
             )
 
-    def _get_api_class(self) -> type[BaseAPI]:
-        config = Helper.read_yml(".codefox.yml")
-        provider = config.get("provider", "gemini")
-        return ModelEnum.by_name(provider).api_class
-
     def run(self) -> None:
         if self.command == "version":
             version = importlib.metadata.version("codefox")
@@ -41,7 +37,7 @@ class CLIManager:
 
         if self.command == "list":
             api_class = self._get_api_class()
-            list_model = List(api_class)
+            list_model = List(api_class, self.args)
             list_model.execute()
             return
 
@@ -49,6 +45,12 @@ class CLIManager:
             api_class = self._get_api_class()
             scan = Scan(api_class, self.args)
             scan.execute()
+            return
+
+        if self.command == "clean":
+            api_class = self._get_api_class()
+            clean = Clean(api_class, self.args)
+            clean.execute()
             return
 
         if self.command == "init":
@@ -61,3 +63,8 @@ class CLIManager:
             '[yellow]Please use flag "--help"',
             "to see available commands[/yellow]",
         )
+
+    def _get_api_class(self) -> type[BaseAPI]:
+        config = Helper.read_yml(".codefox.yml")
+        provider = config.get("provider", "gemini")
+        return ModelEnum.by_name(provider).api_class
