@@ -32,7 +32,7 @@ class Scan(BaseCLI):
 
         is_connect, error = self.model.check_connection()
         if not is_connect:
-            print(f"[red]Failed to connect to mode: {error}[/red]")
+            print(f"[red]Failed to connect to model: {error}[/red]")
             return
 
         name = self.model.model_config["name"]
