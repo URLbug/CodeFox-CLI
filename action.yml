@@ -13,14 +13,6 @@ inputs:
     description: 'GitHub Token for posting comments'
     default: ${{ github.token }}
     required: false
-  target-branch:
-    description: 'Target branch for diff (base)'
-    default: ${{ github.base_ref }}
-    required: false
-  source-branch:
-    description: 'Source branch for diff (head)'
-    default: ${{ github.head_ref }}
-    required: false
 
 runs:
   using: 'composite'
@@ -31,18 +23,23 @@ runs:
         python-version: '3.12'
 
     - name: Install CodeFox
+      shell: bash
       run: |
         python -m pip install --upgrade pip
         pip install git+https://github.com/URLbug/CodeFox-CLI.git@dev_agents
+
+    - name: Fetch base branch
       shell: bash
+      run: |
+        git fetch origin ${{ github.base_ref }} --depth=1
 
     - name: Run CodeFox Scan
+      shell: bash
       run: |
         codefox scan \
-          --targetbranch ${{ inputs.target-branch }} \
-          --sourcebranch ${{ inputs.source-branch }} \
+          --targetbranch ${{ github.base_ref }} \
+          --sourcebranch ${{ github.head_ref }} \
           --ci true
-      shell: bash
       env:
         CODEFOX_API_KEY: ${{ inputs.codefox-api-key }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
