@@ -32,6 +32,13 @@ runs:
       shell: bash
       run: |
         git fetch origin ${{ github.base_ref }} --depth=1
+    
+    - name: Create CodeFox env
+      run: |
+        echo "CODEFOX_API_KEY=${{ inputs.codefox-api-key }}" > .codefoxenv
+        echo "GITHUB_TOKEN=${{ inputs.github-token }}" >> .codefoxenv
+        echo "GITHUB_REPOSITORY=${{ github.repository }}" >> .codefoxenv
+        echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> .codefoxenv
 
     - name: Run CodeFox Scan
       shell: bash
@@ -40,8 +47,3 @@ runs:
           --targetbranch ${{ github.base_ref }} \
           --sourcebranch ${{ github.head_ref }} \
           --ci true
-      env:
-        CODEFOX_API_KEY: ${{ inputs.codefox-api-key }}
-        GITHUB_TOKEN: ${{ inputs.github-token }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
