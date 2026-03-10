@@ -31,7 +31,8 @@ runs:
     - name: Fetch base branch
       shell: bash
       run: |
-        git fetch origin ${{ github.base_ref }} --depth=1
+        git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
+        git fetch origin ${{ github.head_ref }}:${{ github.head_ref }}
 
     - name: Create CodeFox env
       shell: bash
