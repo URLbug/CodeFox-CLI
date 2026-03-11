@@ -1,9 +1,8 @@
 import os
-import time
 from typing import Any
 
 import requests
-from ollama import ChatResponse, Client, pull, web_fetch
+from ollama import ChatResponse, Client, pull
 from rich import print
 from rich.progress import (
     BarColumn,
@@ -133,9 +132,7 @@ class Ollama(BaseAPI):
                 options=options if options else None,                                                                                                      
                 tools=tools if tools else None,                                                                                                         
                 think=self.model_config["think_mode"]                                                                                                                                    
-            )                                                                                                                                                 
-                                                                                                        
-            time.sleep(2)                                                                                                                                     
+            )                                                                                                                             
                                                                                                                               
         if tool_iteration >= max_tool_iterations:                                                                                                             
             print("[yellow]Warning: Max tool iterations reached[/yellow]") 

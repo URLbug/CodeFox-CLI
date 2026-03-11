@@ -203,9 +203,9 @@ class BaseAPI(abc.ABC):
             model_config["temperature"] = 0.2
 
         if model_config["temperature"] > 1 or model_config["temperature"] < 0:
-            raise ValueError(
-                "Temperature must be between 0 and 1, "
-                "got {model_config['temperature']}"
+            raise ValueError(                                                                                                                                     
+                "Temperature must be between 0 and 1, "                                                                                                           
+                f"got {model_config['temperature']}"                                                                                                              
             )
 
         timeout = model_config.get("timeout")

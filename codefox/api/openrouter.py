@@ -1,10 +1,12 @@
 import os
+import json
 from typing import Any
 
 from openai import OpenAI
 
 from codefox.api.base_api import BaseAPI, ExecuteResponse, Response
 from codefox.prompts.prompt_template import PromptTemplate
+from codefox.tools.rag_tool import RagTool
 
 
 class OpenRouter(BaseAPI):
@@ -38,25 +40,80 @@ class OpenRouter(BaseAPI):
     def execute(self, diff_text: str = "") -> ExecuteResponse:
         rag_context = self.get_context(diff_text)
 
+        rag_tool = RagTool(self.rag, self.max_rag_chars)
+        search_knowledge_base = rag_tool.get_tool()
+
+        think_mode = None                                                                                                                             
+        if self.model_config.get("think_mode"):                                                                                                       
+            think_mode = {"reasoning": {"enabled": True}}
+
         system_prompt = PromptTemplate(self.config)
         context_prompt = PromptTemplate(
             {"files_context": rag_context, "diff_text": diff_text}, "content"
         )
         content = context_prompt.get()
+        messages = [
+            {"role": "system", "content": system_prompt.get()},
+            {"role": "user", "content": content},
+        ]
 
-        completion = self.client.chat.completions.create(
+        tools = self._get_tools() if self.review_config["tools"] else None
+
+        response = self.client.chat.completions.create(
             model=self.model_config["name"],
             temperature=self.model_config["temperature"],
             timeout=self.model_config.get("timeout", 600),
             max_tokens=self.model_config["max_tokens"],
             max_completion_tokens=self.model_config["max_completion_tokens"],
-            messages=[
-                {"role": "system", "content": system_prompt.get()},
-                {"role": "user", "content": content},
-            ],
+            tools=tools,
+            messages=messages,
+            extra_body=think_mode
         )
 
-        raw = completion.choices[0].message.content
+        message = response.choices[0].message
+        max_tool_iterations = 25                                                                                                                               
+        tool_iteration = 0
+
+        while tool_iteration < max_tool_iterations and self.review_config["tools"]:                                                                   
+            message = response.choices[0].message                                                                                                     
+            if message.tool_calls:                                                                                                                    
+                tool_iteration += 1                                                                                                                   
+                for tool_call in message.tool_calls:
+                    tool_name = tool_call.function.name
+
+                    try:                                                                                                                                                  
+                        tool_args = json.loads(tool_call.function.arguments)
+                        if tool_name == "search_knowledge_base" and isinstance(tool_args, dict):                                                                                                                                                         
+                            query = tool_args.get("query", "")                                                                                                                                                           
+                            result_data = search_knowledge_base(query)                                                                                                                                               
+                        else:                                                                                                                                     
+                            result_data = f"Error: Tool {tool_name} is not supported."                                                                                             
+                    except json.JSONDecodeError:                                                                                                                          
+                        result_data = "Error: Invalid JSON in tool arguments."  
+
+                    messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": result_data
+                        }
+                    )
+                
+                response = self.client.chat.completions.create(
+                    model=self.model_config["name"],
+                    temperature=self.model_config["temperature"],
+                    timeout=self.model_config.get("timeout", 600),
+                    max_tokens=self.model_config["max_tokens"],
+                    max_completion_tokens=self.model_config["max_completion_tokens"],
+                    tools=tools,
+                    messages=messages,
+                    extra_body=think_mode
+                )
+                message = response.choices[0].message
+            else:
+                break
+
+        raw = message.content
         return Response(text=raw if raw is not None else "")
 
     def remove_files(self) -> None:
@@ -68,3 +125,32 @@ class OpenRouter(BaseAPI):
     def get_tag_models(self) -> list:
         models = self.client.models.list()
         return [model.id for model in models]
+    
+    def _get_tools(self) -> list[dict[str, str]]:
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_knowledge_base",
+                    "description": "Search the project's internal knowledge base using semantic retrieval (RAG). Use this tool when you need additional context about the codebase, architecture, APIs, coding conventions, or implementation details.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": (
+                                        "A natural language query describing what to search for in the knowledge base. "
+                                        "The query may include class names, function or method names, modules, APIs, "
+                                        "configuration keys, error messages, or short code snippets. "
+                                        "Use it to find related implementations, documentation, or examples. "
+                                        "Examples: 'def method_name', "
+                                        "'class UserService methods', "
+                                        "'function validate_token'"
+                                    )
+                                }
+                            }
+                        },
+                    "required": ["query"]
+                }
+            }
+        ]

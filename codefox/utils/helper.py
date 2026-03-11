@@ -4,7 +4,6 @@ import yaml
 from typing import TYPE_CHECKING, Any
 
 from pathlib import Path
-from typing import Any
 from codefox.utils.parser import Parser
 
 if TYPE_CHECKING:

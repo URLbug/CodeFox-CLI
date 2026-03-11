@@ -20,20 +20,20 @@ class Clean(BaseCLI):
             return
         
         if type_cache == "all":
-            for type_cache in ["rag", "embedding",]:
+            for type_cache in {"rag", "embedding",}:
                 path = self._get_dir_cache(type_cache)
                 self._clean_dir(path)
             return
         
-        print("Sorry argument invalid. Use next params: all, rag, embedding'")
+        print("Argument invalid. Use next params: all, rag, embedding'")
     
     def _clean_dir(self, path: Path | None) -> None:
         if not path or not path.exists():
-            print("Sorry but not found cache dir")
+            print("Not found cache dir")
             return
         
         if not path.is_dir():
-            print("Sorry but current path is not dir")
+            print("Current path is not dir")
             return
         
         if path in [Path("/"), Path.home()]:

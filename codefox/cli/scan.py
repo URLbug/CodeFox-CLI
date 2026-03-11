@@ -17,8 +17,11 @@ from codefox.bots.github_bot import GitHubBot
 class Scan(BaseCLI):
     def __init__(self, model: type[BaseAPI], args: dict[str, Any]):
         self.model = model()
-        self.github_bot = GitHubBot()
         self.args = args
+
+        self.github_bot = None
+        if self.args.get("ci", False):
+            self.github_bot = GitHubBot()
 
     def execute(self) -> None:
         source_branch, target_branch = self._get_branchs()
@@ -40,7 +43,7 @@ class Scan(BaseCLI):
             print(f"[red]Model '{name}' not found.")
 
             command = List(
-                model=self.model,
+                model=self.model.__class__,
                 args={
                     "typeModel": "models",
                 }

@@ -1,5 +1,4 @@
 import os
-import time
 from typing import Any
 
 from google import genai
@@ -119,23 +118,29 @@ class Gemini(BaseAPI):
                         max_output_tokens=self.model_config["max_tokens"]
                     ),
                 )
-
-                time.sleep(2)
             else:
                 break
 
         return Response(text=response.text or "")
 
-    def _get_tools(self) -> types.Tool:
+    def _get_tools(self) -> list[types.Tool]:
         search_knowledge_base_function = {
             "name": "search_knowledge_base",
-            "description": "Search the internal knowledge base using semantic retrieval (RAG) and return the most relevant context passages for the given query.",
+            "description": "Search the project's internal knowledge base using semantic retrieval (RAG). Use this tool when you need additional context about the codebase, architecture, APIs, coding conventions, or implementation details.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "query": {
                         "type": "string",
-                        "description": "Natural language query used to search the knowledge base for relevant information or context.",
+                        "description": (
+                            "A natural language query describing what to search for in the knowledge base. "
+                            "The query may include class names, function or method names, modules, APIs, "
+                            "configuration keys, error messages, or short code snippets. "
+                            "Use it to find related implementations, documentation, or examples. "
+                            "Examples: 'def method_name', "
+                            "'class UserService methods', "
+                            "'function validate_token'"
+                        ),
                     },
                 },
                 "required": ["query"],
