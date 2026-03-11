@@ -11,7 +11,7 @@ from codefox.cli.list import List
 from codefox.cli.base_cli import BaseCLI
 from codefox.api.base_api import BaseAPI
 from codefox.utils.helper import Helper
-from codefox.utils.github_bot import GitHubBot
+from codefox.bots.github_bot import GitHubBot
 
 
 class Scan(BaseCLI):
@@ -79,18 +79,17 @@ class Scan(BaseCLI):
 
     def _classic_response_answer(self, diff_text: str) -> None:
         try:
-            try:
-                response = self.model.execute(diff_text)
+            response = self.model.execute(diff_text)
 
-                console = Console()
-                text = Markdown(response.text, code_theme="manni")
-                print("[green]Scan result from model:[/green]\n")
-                console.print(text)
-            except MarkupError:
-                print(
-                    "[green]Scan result from model:[/green]\n"
-                    + escape(response.text)
-                )
+            console = Console()
+            text = Markdown(response.text, code_theme="manni")
+            print("[green]Scan result from model:[/green]\n")
+            console.print(text)
+        except MarkupError:
+            print(
+                "[green]Scan result from model:[/green]\n"
+                + escape(response.text)
+            )
         except Exception as e:
             err_str = str(e)
             print("[red]Failed scan: " + escape(err_str) + "[/red]")

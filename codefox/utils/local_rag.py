@@ -13,6 +13,7 @@ from rich.console import Console
 from rich.progress import track
 
 from codefox.utils.helper import Helper
+from codefox.utils.parser import Parser
 
 
 class LocalRAG:
@@ -149,7 +150,7 @@ class LocalRAG:
 
                 files_read += 1
 
-                chunks = Helper.smart_chunk(
+                chunks = Parser.smart_chunk(
                     path, content, chunk_size, chunk_overlap
                 )
 
@@ -173,6 +174,7 @@ class LocalRAG:
             corpus_tokens = bm25s.tokenize(
                 texts, stopwords=self.kwargs["language"]
             )
+            
             self.retriever.index(corpus_tokens)
         self.console.print("[green]✓[/green] BM25 lexical index built.")
 
