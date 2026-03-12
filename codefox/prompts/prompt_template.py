@@ -1,5 +1,4 @@
 import hashlib
-
 from typing import Any, cast
 
 import codefox.prompts.audit.audit_content as audit_content
@@ -111,18 +110,18 @@ class PromptTemplate(Template):
 
         review_policy = ""
         if review.get("suggest_fixes"):
-            review_policy += f"- Auto-fix: {review.get("suggest_fixes")}\n"
+            review_policy += f"- Auto-fix: {review.get('suggest_fixes')}\n"
         else:
-            review_policy += f"- Auto-fix: DO NOT offer auto-fixes\n"
-        
+            review_policy += "- Auto-fix: DO NOT offer auto-fixes\n"
+
         if review.get("severity"):
-            review_policy += f"- Minimum severity: {review.get("severity")}\n"
-        
+            review_policy += f"- Minimum severity: {review.get('severity')}\n"
+
         if review.get("max_issues"):
-            review_policy += f"- Max findings: {review.get("max_issues")}\n"
-        
+            review_policy += f"- Max findings: {review.get('max_issues')}\n"
+
         if review.get("diff_only"):
-            review_policy += f"- Diff-only mode: {review.get("diff_only")}"
+            review_policy += f"- Diff-only mode: {review.get('diff_only')}"
 
         parts.append(f"""
 ## REVIEW POLICY
@@ -159,6 +158,4 @@ Limit the output to the **{review.get("max_issues")}** most critical findings.
         return cast(dict[str, Any], self.config[key])
 
     def _join(self, parts: list[str]) -> str:
-        return "\n\n".join(
-            p.strip() for p in parts if p and p.strip()
-        )
+        return "\n\n".join(p.strip() for p in parts if p and p.strip())

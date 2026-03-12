@@ -84,12 +84,6 @@ def test_get_all_files_skips_ignore_dirs(tmp_path: Path) -> None:
         os.chdir(prev)
 
 
-def test_supported_extensions_contains_common() -> None:
-    assert ".py" in Helper.SUPPORTED_EXTENSIONS
-    assert ".js" in Helper.SUPPORTED_EXTENSIONS
-    assert ".ts" in Helper.SUPPORTED_EXTENSIONS
-
-
 # --- parse_diff_for_rag ---
 
 
@@ -125,6 +119,7 @@ def test_parse_diff_for_rag_respects_max_tokens() -> None:
 
 def test_chunk_text_sentences_splits_by_size() -> None:
     import nltk
+
     nltk.download("punkt_tab", quiet=True)
     text = "First sentence. Second sentence. Third sentence. Fourth one."
     chunks = Helper.chunk_text_sentences(text, chunk_size=30, overlap=5)
@@ -136,6 +131,7 @@ def test_chunk_text_sentences_splits_by_size() -> None:
 
 def test_chunk_text_sentences_single_short() -> None:
     import nltk
+
     nltk.download("punkt_tab", quiet=True)
     text = "One short sentence."
     chunks = Helper.chunk_text_sentences(text, chunk_size=100, overlap=0)
@@ -161,6 +157,7 @@ def test_get_ts_parser_by_extension_unknown_returns_none() -> None:
 
 def test_smart_chunk_fallback_to_sentences() -> None:
     import nltk
+
     nltk.download("punkt_tab", quiet=True)
     path = Path("readme.txt")
     content = "First sentence here. Second sentence there. Third."

@@ -1,10 +1,11 @@
 import os
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, cast
+
 import git
 import yaml
-from typing import TYPE_CHECKING, Any
 
-from pathlib import Path
-from codefox.utils.parser import Parser
+from codefox.utils.parser import Parser, TreeSitterParser
 
 if TYPE_CHECKING:
     import codefox.utils.local_rag as local_rag
@@ -61,8 +62,7 @@ class Helper:
 
     @staticmethod
     def get_diff(
-        source_branch: str | None = None,
-        target_branch: str | None = None
+        source_branch: str | None = None, target_branch: str | None = None
     ) -> str | None:
         try:
             repo = git.Repo(".")
@@ -74,39 +74,52 @@ class Helper:
             else:
                 diff_text = repo.git.diff()
 
-            return diff_text
+            return cast(str | None, diff_text)
         except git.exc.InvalidGitRepositoryError:
             return None
 
-    # ------------------------------------------------------------------                                                                             
-    # Backward‑compatible wrappers - delegate to Parser                                                                                              
-    # ------------------------------------------------------------------                                                                             
-    @staticmethod                                                                                                                                    
-    def parse_diff_for_rag(diff_text: str, max_tokens: int = 300) -> str:                                                                            
-        return Parser.parse_diff_for_rag(diff_text, max_tokens)                                                                                      
-                                                                                                                                                     
-    @staticmethod                                                                                                                                    
-    def get_ts_parser_by_extension(ext: str):                                                                                                        
-        return Parser.get_ts_parser_by_extension(ext)                                                                                                
-                                                                                                                                                     
-    @staticmethod                                                                                                                                    
-    def get_files_context(                                                                                                                           
-        rag: "local_rag.LocalRAG",                                                                                                                   
-        query: str,                                                                                                                                  
-        k: int = 5,                                                                                                                                  
-        max_rag_chars: int = 16_000,                                                                                                                 
-        parse_diff: bool = True,                                                                                                                     
-    ) -> str:                                                                                                                                        
-        return Parser.get_files_context(rag, query, k, max_rag_chars, parse_diff)                                                                    
-                                                                                                                                                     
-    @staticmethod                                                                                                                                    
-    def chunk_code_with_ts(parser, content: str) -> list[str]:                                                                                       
-        return Parser.chunk_code_with_ts(parser, content)                                                                                            
-                                                                                                                                                     
-    @staticmethod                                                                                                                                    
-    def chunk_text_sentences(text: str, chunk_size: int, overlap: int) -> list[str]:                                                                 
-        return Parser.chunk_text_sentences(text, chunk_size, overlap)                                                                                
-                                                                                                                                                     
-    @staticmethod                                                                                                                                    
-    def smart_chunk(path: Path, content: str, chunk_size, overlap) -> list:                                                                          
-        return Parser.smart_chunk(path, content, chunk_size, overlap)
+    # ------------------------------------------------------------------
+    # Backward‑compatible wrappers - delegate to Parser
+    # ------------------------------------------------------------------
+    @staticmethod
+    def parse_diff_for_rag(diff_text: str, max_tokens: int = 300) -> str:
+        return cast(str, Parser.parse_diff_for_rag(diff_text, max_tokens))
+
+    @staticmethod
+    def get_ts_parser_by_extension(ext: str) -> TreeSitterParser | None:
+        return Parser.get_ts_parser_by_extension(ext)
+
+    @staticmethod
+    def get_files_context(
+        rag: "local_rag.LocalRAG",
+        query: str,
+        k: int = 5,
+        max_rag_chars: int = 16_000,
+        parse_diff: bool = True,
+    ) -> str:
+        return cast(
+            str,
+            Parser.get_files_context(rag, query, k, max_rag_chars, parse_diff),
+        )
+
+    @staticmethod
+    def chunk_code_with_ts(parser: Any, content: str) -> list[str]:
+        return cast(list[str], Parser.chunk_code_with_ts(parser, content))
+
+    @staticmethod
+    def chunk_text_sentences(
+        text: str, chunk_size: int, overlap: int
+    ) -> list[str]:
+        return cast(
+            list[str],
+            Parser.chunk_text_sentences(text, chunk_size, overlap),
+        )
+
+    @staticmethod
+    def smart_chunk(
+        path: Path, content: str, chunk_size: Any, overlap: Any
+    ) -> list[Any]:
+        return cast(
+            list[Any],
+            Parser.smart_chunk(path, content, chunk_size, overlap),
+        )

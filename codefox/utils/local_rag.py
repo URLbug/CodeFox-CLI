@@ -1,11 +1,11 @@
 import json
+import math
 from pathlib import Path
 
 import bm25s
-import math
-import psutil
 import nltk
 import numpy as np
+import psutil
 from fastembed import TextEmbedding
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
@@ -174,15 +174,15 @@ class LocalRAG:
             corpus_tokens = bm25s.tokenize(
                 texts, stopwords=self.kwargs["language"]
             )
-            
+
             self.retriever.index(corpus_tokens)
         self.console.print("[green]✓[/green] BM25 lexical index built.")
 
         self.chunks = texts
         batch_size = max(
-            self.kwargs.get(
-                "embed_batch_size", self.default_embed_batch_size
-            ), 1)
+            self.kwargs.get("embed_batch_size", self.default_embed_batch_size),
+            1,
+        )
         idx_dir = self._index_dir()
         idx_dir.mkdir(parents=True, exist_ok=True)
         qdrant_path = self._qdrant_path()
@@ -227,7 +227,8 @@ class LocalRAG:
 
         self.console.print("[green]✓[/green] Qdrant semantic index built.")
         self.console.print(
-            "[bold green]RAG build complete and ready for queries![/bold green]\n"
+            "[bold green]RAG build complete and ready for "
+            "queries![/bold green]\n"
         )
 
     def search(self, query: str, k: int = 5) -> list[dict]:
@@ -237,12 +238,13 @@ class LocalRAG:
                 "Please run build() first.[/bold red]"
             )
             return []
-        
+
         if query.startswith("class "):
             name = query.split()[1]
 
             matches = [
-                i for i, chunk in enumerate(self.chunks)
+                i
+                for i, chunk in enumerate(self.chunks)
                 if f"class {name}" in chunk
             ]
 

@@ -1,16 +1,16 @@
 import importlib.metadata
-from typing import Any
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 from rich import print
 
+from codefox.api.base_api import BaseAPI
 from codefox.api.model_enum import ModelEnum
+from codefox.cli.clean import Clean
 from codefox.cli.init import Init
 from codefox.cli.list import List
 from codefox.cli.scan import Scan
-from codefox.cli.clean import Clean
-from codefox.api.base_api import BaseAPI
 from codefox.utils.helper import Helper
 
 
@@ -43,13 +43,13 @@ class CLIManager:
 
         if self.command == "scan":
             api_class = self._get_api_class()
-            scan = Scan(api_class, self.args)
+            scan = Scan(api_class, self.args or {})
             scan.execute()
             return
 
         if self.command == "clean":
             api_class = self._get_api_class()
-            clean = Clean(api_class, self.args)
+            clean = Clean(api_class, self.args or {})
             clean.execute()
             return
 

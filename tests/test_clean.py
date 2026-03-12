@@ -31,7 +31,9 @@ def test_get_dir_cache_rag_returns_default() -> None:
             }
             clean = Clean(Gemini, args={"typeCache": "rag"})
             clean.model = MagicMock()
-            clean.model.model_config = {"rag_index_dir": LocalRAG.default_index_dir}
+            clean.model.model_config = {
+                "rag_index_dir": LocalRAG.default_index_dir
+            }
     path = clean._get_dir_cache("rag")
     assert path is not None
     assert "rag_index" in str(path)
@@ -55,7 +57,7 @@ def test_clean_dir_none_prints_message(capsys: pytest.CaptureFixture) -> None:
             clean.model = MagicMock()
     clean._clean_dir(None)
     out = capsys.readouterr().out
-    assert "not found" in out or "Sorry" in out
+    assert "Not found" in out
 
 
 def test_clean_dir_nonexistent_path_prints_message(
@@ -70,7 +72,7 @@ def test_clean_dir_nonexistent_path_prints_message(
     assert not missing.exists()
     clean._clean_dir(missing)
     out = capsys.readouterr().out
-    assert "not found" in out or "Sorry" in out
+    assert "Not found" in out
 
 
 def test_clean_dir_dangerous_raises() -> None:

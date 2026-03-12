@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast, get_args
 
 from nltk.tokenize import sent_tokenize
-from tree_sitter import Parser
-from tree_sitter_language_pack import get_parser, SupportedLanguage
 from pygments.lexers import get_lexer_for_filename
 from pygments.util import ClassNotFound
+from tree_sitter import Parser as TreeSitterParser
+from tree_sitter_language_pack import SupportedLanguage, get_parser
 
 if TYPE_CHECKING:
     import codefox.utils.local_rag as local_rag
@@ -100,7 +100,7 @@ class Parser:
         return "\n\n".join(parts)
 
     @classmethod
-    def get_ts_parser_by_extension(cls, ext: str) -> Parser | None:
+    def get_ts_parser_by_extension(cls, ext: str) -> TreeSitterParser | None:
         try:
             lang = get_lexer_for_filename(ext)
             lang = lang.name.lower()
@@ -131,7 +131,9 @@ class Parser:
         return chunks
 
     @classmethod
-    def chunk_text_sentences(cls, text: str, chunk_size: int, overlap: int) -> list[str]:
+    def chunk_text_sentences(
+        cls, text: str, chunk_size: int, overlap: int
+    ) -> list[str]:
         sentences = sent_tokenize(text)
         chunks = []
         current = []
@@ -155,7 +157,9 @@ class Parser:
         return chunks
 
     @classmethod
-    def smart_chunk(cls, path: Path, content: str, chunk_size, overlap) -> list:
+    def smart_chunk(
+        cls, path: Path, content: str, chunk_size, overlap
+    ) -> list:
         ext = path.suffix.lower()
 
         parser = cls.get_ts_parser_by_extension(ext)

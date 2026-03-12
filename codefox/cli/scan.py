@@ -7,11 +7,11 @@ from rich.errors import MarkupError
 from rich.markdown import Markdown
 from rich.markup import escape
 
-from codefox.cli.list import List
-from codefox.cli.base_cli import BaseCLI
 from codefox.api.base_api import BaseAPI
-from codefox.utils.helper import Helper
 from codefox.bots.github_bot import GitHubBot
+from codefox.cli.base_cli import BaseCLI
+from codefox.cli.list import List
+from codefox.utils.helper import Helper
 
 
 class Scan(BaseCLI):
@@ -46,7 +46,7 @@ class Scan(BaseCLI):
                 model=self.model.__class__,
                 args={
                     "typeModel": "models",
-                }
+                },
             )
             command.execute()
             return
@@ -72,12 +72,13 @@ class Scan(BaseCLI):
         if not self.args.get("ci", False):
             self._classic_response_answer(diff_text)
             return
-        
+
         self._ci_response_answer(diff_text)
 
     def _ci_response_answer(self, diff_text: str) -> None:
         response = self.model.execute(diff_text)
-        self.github_bot.send(response.text)
+        if self.github_bot is not None:
+            self.github_bot.send(response.text)
         self.model.remove_files()
 
     def _classic_response_answer(self, diff_text: str) -> None:
@@ -96,7 +97,7 @@ class Scan(BaseCLI):
         except Exception as e:
             err_str = str(e)
             print("[red]Failed scan: " + escape(err_str) + "[/red]")
-        
+
         self.model.remove_files()
 
     def _get_branchs(self) -> tuple[str | None, str | None]:
@@ -105,7 +106,7 @@ class Scan(BaseCLI):
 
         if source_branch and target_branch:
             return source_branch, target_branch
-        
+
         source_branch = self.model.review_config["sourceBranch"]
         target_branch = self.model.review_config["targetBranch"]
 

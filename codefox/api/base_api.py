@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Any, Protocol
 
 from codefox.utils.helper import Helper
-from codefox.utils.parser import Parser
 from codefox.utils.local_rag import LocalRAG
+from codefox.utils.parser import Parser
 
 
 class ExecuteResponse(Protocol):
@@ -46,7 +46,7 @@ class BaseAPI(abc.ABC):
             "embedding"
         ):
             self.model_config["embedding"] = self.default_embedding
-        
+
         self.rag: LocalRAG | None = None
 
         self.max_rag_chars = (
@@ -92,23 +92,21 @@ class BaseAPI(abc.ABC):
             "rag_lazy_load": "lazy_load",
             "rag_index_dir": "index_dir",
         }
-        for config_key, kw_key in key_map.items():                                                                                                    
-            if config_key in self.model_config:                                                                                                       
+        for config_key, kw_key in key_map.items():
+            if config_key in self.model_config:
                 rag_kw[kw_key] = self.model_config[config_key]
 
-        safe_rag_kw = {}                                                                                                                             
-        for k, v in rag_kw.items():                                                                                                                  
-            if k in {"index_dir", "rag_index_dir"}:                                                                  
-                base_dir = Path.cwd() / ".codefox"                                                                                               
+        safe_rag_kw = {}
+        for k, v in rag_kw.items():
+            if k in {"index_dir", "rag_index_dir"}:
+                base_dir = (Path.cwd() / ".codefox").resolve()
                 target = Path(v).resolve()
 
-                try:
-                    target.relative_to(base_dir)                                                                                                           
-                except ValueError:                                                                                   
-                    raise ValueError(f"Invalid RAG index directory: {v}")                                                                            
-                
-                safe_rag_kw[k] = str(target)                                                                                                         
-            else:                                                                                                                                    
+                if not target.is_relative_to(base_dir):
+                    raise ValueError(f"Invalid RAG index directory: {v}")
+
+                safe_rag_kw[k] = str(target)
+            else:
                 safe_rag_kw[k] = v
 
         try:
@@ -131,11 +129,11 @@ class BaseAPI(abc.ABC):
     @abc.abstractmethod
     def get_tag_models(self) -> list[str]:
         return []
-    
+
     def get_context(self, diff_text: str) -> str:
         if len(diff_text) > self.max_diff_chars:
             diff_text = (
-                diff_text[:self.max_diff_chars]
+                diff_text[: self.max_diff_chars]
                 + "\n\n... [diff truncated for context length]"
             )
 
@@ -147,7 +145,7 @@ class BaseAPI(abc.ABC):
                 k=12,
                 max_rag_chars=self.max_rag_chars,
             )
-        
+
         return rag_context
 
     def _processing_review_config(
@@ -161,15 +159,24 @@ class BaseAPI(abc.ABC):
 
         if "diff_only" not in review_config:
             review_config["diff_only"] = False
-        
+
         if "sourceBranch" not in review_config:
             review_config["sourceBranch"] = None
-        
+
         if "targetBranch" not in review_config:
             review_config["targetBranch"] = None
 
         if "tools" not in review_config:
             review_config["tools"] = False
+
+        review_config["max_tool_iterations"] = review_config.get(
+            "max_tool_iterations", 25
+        )
+        if review_config["max_tool_iterations"] > 100:
+            review_config["max_tool_iterations"] = 100
+
+        if review_config["max_tool_iterations"] < 0:
+            review_config["max_tool_iterations"] = 0
 
         return review_config
 
@@ -186,7 +193,7 @@ class BaseAPI(abc.ABC):
             "max_tokens"
         ):
             model_config["max_tokens"] = None
-        
+
         if "think_mode" not in model_config or not model_config.get(
             "think_mode"
         ):
@@ -203,9 +210,9 @@ class BaseAPI(abc.ABC):
             model_config["temperature"] = 0.2
 
         if model_config["temperature"] > 1 or model_config["temperature"] < 0:
-            raise ValueError(                                                                                                                                     
-                "Temperature must be between 0 and 1, "                                                                                                           
-                f"got {model_config['temperature']}"                                                                                                              
+            raise ValueError(
+                "Temperature must be between 0 and 1, "
+                f"got {model_config['temperature']}"
             )
 
         timeout = model_config.get("timeout")

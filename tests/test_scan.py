@@ -2,8 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from codefox.api.gemini import Gemini
 from codefox.cli.scan import Scan
 
@@ -15,12 +13,18 @@ def test_get_branchs_from_args() -> None:
                 "model": {"name": "gemini-2.0-flash"},
                 "review": {},
             }
-            scan = Scan(Gemini, args={
-                "sourceBranch": "feature",
-                "targetBranch": "main",
-            })
+            scan = Scan(
+                Gemini,
+                args={
+                    "sourceBranch": "feature",
+                    "targetBranch": "main",
+                },
+            )
             scan.model = MagicMock()
-            scan.model.review_config = {"sourceBranch": None, "targetBranch": None}
+            scan.model.review_config = {
+                "sourceBranch": None,
+                "targetBranch": None,
+            }
     src, tgt = scan._get_branchs()
     assert src == "feature"
     assert tgt == "main"
@@ -54,12 +58,18 @@ def test_get_branchs_prefers_args_over_config() -> None:
                 "model": {"name": "gemini-2.0-flash"},
                 "review": {"sourceBranch": "dev", "targetBranch": "main"},
             }
-            scan = Scan(Gemini, args={
-                "sourceBranch": "feat",
-                "targetBranch": "master",
-            })
+            scan = Scan(
+                Gemini,
+                args={
+                    "sourceBranch": "feat",
+                    "targetBranch": "master",
+                },
+            )
             scan.model = MagicMock()
-            scan.model.review_config = {"sourceBranch": "dev", "targetBranch": "main"}
+            scan.model.review_config = {
+                "sourceBranch": "dev",
+                "targetBranch": "main",
+            }
     src, tgt = scan._get_branchs()
     assert src == "feat"
     assert tgt == "master"
