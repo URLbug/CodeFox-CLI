@@ -15,6 +15,12 @@
   <a href="https://pepy.tech/projects/codefox"><img src="https://static.pepy.tech/personalized-badge/codefox?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads" alt="PyPI Downloads"></a>
 </p>
 
+<p align="center">
+  📚 <a href="WIKI.md">Documentation</a> •
+  🚀 <a href="#-quick-start">Quick Start</a> •
+  🐛 <a href="https://github.com/URLbug/CodeFox-CLI/issues">Report Issue</a>
+</p>
+
 
 ## 🦊 Overview
 
