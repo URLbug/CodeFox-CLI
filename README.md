@@ -4,14 +4,14 @@
 
 <h1 align="center">CodeFox-CLI</h1>
 <p align="center">
-    Intelligent automated code review system
+  Diff-aware AI code review for terminal and CI workflows
 </p>
 
 <p align="center">
   <a href="https://github.com/URLbug/CodeFox-CLI/actions?query=branch%3Amain"><img src="https://github.com/URLbug/CodeFox-CLI/workflows/CI/badge.svg" alt="CI" /></a>
   <a href="https://github.com/URLbug/CodeFox-CLI/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-green.svg" alt="Python 3.11+" /></a>
-  <a href="https://github.com/codefox-lab/CodeFox-CLI/wiki"><img src="https://img.shields.io/badge/docs-WIKI-blue?logo=readme" alt="Wiki" /></a>
+  <a href="https://github.com/codefox-lab/CodeFox-CLI/wiki"><img src="https://img.shields.io/badge/docs-Wiki-blue?logo=readme" alt="Wiki" /></a>
   <a href="https://pepy.tech/projects/codefox"><img src="https://static.pepy.tech/personalized-badge/codefox?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads" alt="PyPI Downloads"></a>
 </p>
 
@@ -21,18 +21,35 @@
   🐛 <a href="https://github.com/URLbug/CodeFox-CLI/issues">Report Issue</a>
 </p>
 
+---
 
 ## 🦊 Overview
 
-**CodeFox-CLI** is an intelligent automated code review system that takes over routine security and code quality checks, allowing senior developers to focus on architecture and complex tasks.
+**CodeFox-CLI** is a CLI-first AI code review tool for **git diffs, pull requests, and CI workflows**.
 
-Unlike traditional linters, CodeFox understands the context of the entire project and its business logic, delivering not just review comments but **ready-to-apply fixes** (Auto-Fix). Works with **Gemini**, **Ollama**, and **OpenRouter** - use your preferred AI backend.
+It analyzes code changes, retrieves relevant project context, and produces review feedback directly in the terminal or inside automated review pipelines.
 
-| vs Linters | vs AI code review (e.g. CodeRabbit) |
-|------------|-------------------------------------|
-| Understands full project context & business logic | Self-hosted / local (Ollama), no vendor lock-in |
-| Suggests fixes, not only rules | Configurable models, security/performance/style rules |
-| RAG over your codebase for relevant hints | CLI-first: `git diff` → review in seconds |
+CodeFox supports both:
+- **local reviews with Ollama** for self-hosted workflows
+- **cloud LLM providers** such as Gemini and OpenRouter when remote inference is preferred
+
+It is designed for developers and teams who want a **CLI-first review workflow** for local checks, pull requests, and CI/CD pipelines.
+
+---
+
+## Why CodeFox?
+
+- Reviews **git changes**, not just isolated files
+- Uses **relevant codebase context** to improve review quality
+- Works with **local or cloud models**
+- Fits naturally into **terminal-based and CI workflows**
+- Supports configurable review focus such as **security**, **performance**, and **style**
+
+| Compared to linters | Compared to hosted AI reviewers |
+|---|---|
+| Reviews diffs with codebase context, not only static rules | Can run locally with Ollama |
+| Can suggest fixes, not only flag issues | No hard vendor lock-in |
+| Flexible review focus: security, performance, style | CLI-first workflow for local and CI usage |
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/URLbug/CodeFox-CLI/refs/heads/main/assets/work_review.gif" alt="CodeFox scan demo" width="800" />
@@ -40,65 +57,83 @@ Unlike traditional linters, CodeFox understands the context of the entire projec
 
 ---
 
+## What CodeFox is and is not
+
+CodeFox is a **CLI for automated AI review of git changes**.
+
+It is **not** an IDE coding assistant like Cursor or Claude Code.  
+It is built for **diff review workflows**, terminal usage, and CI/CD automation.
+
+---
+
+## Integrations
+
+Current:
+- GitHub Actions
+
+Planned:
+- GitLab
+- Bitbucket
+
+---
+
+## Privacy
+
+- With **Ollama**, reviews can run fully locally on your machine
+- With **cloud providers**, code and context may be sent to external APIs depending on your configuration
+- Use `.codefoxignore` to exclude files from analysis
+
+---
+
 ## 📥 Installation
 
-Choose the installation method that fits your workflow.
+### For users
 
-### 🔹 Install dependencies (local setup)
-
-```bash
-pip install -r requirements.txt
-```
-### 🔹 Development mode (editable install)
-
-Provides the local codefox CLI command and enables live code changes.
-
-```bash
-python3 -m pip install -e .
-```
-
-### 🔹 Install from GitHub
-
-🐍 Using pip
-
-```bash
-python3 -m pip install codefox
-# or python3 -m pip install git+https://github.com/URLbug/CodeFox-CLI.git@main
-```
-
-⚡ Using uv (recommended for CLI usage)
+**uv**
 ```bash
 uv tool install codefox
-# or uv tool install git+https://github.com/URLbug/CodeFox-CLI.git@main
+```
+
+**pip**
+```bash
+python3 -m pip install codefox
 ```
 
 ---
 
-✅ Verify installation
+## Verify installation
+
 ```bash
 codefox version
 ```
-Or
-```bash
-python3 -m codefox version
-```
+
+---
 
 ## 🚀 Quick Start
 
-### Initialize (stores your API key)
-
+1. Initialize CodeFox
 ```bash
 codefox init
 ```
 
-### Run a scan (uses the current git diff)
+This stores your provider token locally and creates the initial config files.
 
+2. Review your current git changes
 ```bash
 codefox scan
 ```
 
-### Show version
+What happens during `scan`:
 
+- collects the current git diff
+
+- loads relevant project context based on your configuration
+
+- sends the review request to the configured model
+
+- returns review comments and optional fix suggestions
+
+3. Show version
 ```bash
 codefox version
 ```
