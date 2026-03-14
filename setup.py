@@ -3,15 +3,32 @@ import pathlib
 from setuptools import find_packages, setup
 
 HERE = pathlib.Path(__file__).parent
-README = (HERE / "README.txt").read_text(encoding="utf-8") if (HERE / "README.txt").exists() else ""
+README = (HERE / "README.md").read_text(encoding="utf-8") if (HERE / "README.md").exists() else ""
 
 setup(
 	name="codefox",
 	version="0.4.0",
 	description="CodeFox CLI - code auditing and code review tool",
 	long_description=README,
-	long_description_content_type="text/plain",
+	long_description_content_type="text/markdown",
 	author="CodeFox",
+	license="MIT",
+	url="https://github.com/URLbug/CodeFox-CLI",
+	project_urls={
+		"Documentation": "https://github.com/codefox-lab/CodeFox-CLI/wiki",
+		"Source": "https://github.com/URLbug/CodeFox-CLI",
+		"Issues": "https://github.com/URLbug/CodeFox-CLI/issues",
+		"Security": "https://github.com/URLbug/CodeFox-CLI/blob/main/SECURITY.md",
+	},
+	keywords=[
+		"ai",
+		"code review",
+		"cli",
+		"static analysis",
+		"ollama",
+		"openrouter",
+		"gemini",
+	],
 	packages=find_packages(),
 	include_package_data=True,
 	install_requires=[
@@ -40,10 +57,18 @@ setup(
 		],
 	},
 	classifiers=[
+		"Development Status :: 4 - Beta",
+		"Environment :: Console",
+		"Intended Audience :: Developers",
 		"Programming Language :: Python :: 3",
+		"Programming Language :: Python :: 3.11",
+		"Programming Language :: Python :: 3.12",
+		"Programming Language :: Python :: 3.13",
 		"License :: OSI Approved :: MIT License",
 		"Operating System :: OS Independent",
+		"Topic :: Software Development",
+		"Topic :: Software Development :: Quality Assurance",
+		"Topic :: Utilities",
 	],
 	python_requires=">=3.11",
 )
-
